@@ -3,17 +3,17 @@
 
 
 // Version
-const version = "0.04";
+const version = "0.05";
 // 28.03.2026
 
 
 // ToDo / Bugs / Ideen: 
 // - Ausweitung auf U14 (Parameter?)
-// - Darstellung nächste 5 Spiele in Widget (wenn noch mehr als 5 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga, Nennung X von Y Spielen bereits gespielt)
+// - Darstellung nächste 3 Spiele in Widget (wenn noch mehr als 5 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga, Nennung X von Y Spielen bereits gespielt)
 
 
 // Debuglevel
-let debuglevel = 1;
+let debuglevel = 0;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 // 2 - Analyse Werte und Einfärben Stacks
@@ -60,11 +60,17 @@ for (let i=1; i<max+1; i++ ) {
   let endedatum = html.indexOf("</nobr>", start);
   let endem1 = html.indexOf("</td>",endedatum+56);
   
+  //Spieltag
   dsvdatenarray[i][0] = i;
+  
+  // Datum
   dsvdatenarray[i][1] = html.substring(starta+6,endedatum).trim();
+  
+  // Uhrzeit
   dsvdatenarray[i][2] = html.substring(endedatum+9,endedatum+18).trim();
   
-      // Manchmal gibt es vor der Heimmannschaft ein Bild in der Quelle, welches übersprungen werden muss
+  //Heimmannschaft
+  // Manchmal gibt es vor der Heimmannschaft ein Bild in der Quelle, welches übersprungen werden muss
   let test1 = html.substring(endedatum+48,endedatum+51).trim();
   if (test1 == "div") {
     let startb = html.indexOf("</div></td>",endedatum+18);
@@ -74,8 +80,8 @@ for (let i=1; i<max+1; i++ ) {
     dsvdatenarray[i][3] = html.substring(endedatum+56,endem1).trim();
   }
   
+  //Gastmannschaft
   // Manchmal gibt es vor der Gastmannschaft ein Bild in der Quelle, welches übersprungen werden muss
-  
   let endem2 = html.indexOf("</td>",endem1+38);
   let test2 = html.substring(endem1+30,endem1+33).trim();  
   if (test2 == "div") {
@@ -86,11 +92,11 @@ for (let i=1; i<max+1; i++ ) {
     dsvdatenarray[i][4] = html.substring(endem1+38,endem2).trim();
   }
   
+  //Spielort
   let endeo = html.indexOf("</td>",endem2+9);
   dsvdatenarray[i][5] = html.substring(endem2+9,endeo).trim();
-    
-  //Dagersheim</td><td><a href='https://dsvdaten.dsv.de/Modules/WB/Game.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L&GameID=7'>12:13</a></td><td>(2:5, 3:3, 4:4, 3:1)</td></tr>
-  //Esslingen</td><td><a href='https://dsvdaten.dsv.de/Modules/WB/Game.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L&GameID=42'>mehr...</a></td><td></td></tr>    
+  
+  //Ergebnis
   let startd = html.indexOf(">",endeo+11);
   let endee = html.indexOf("</a>",startd);
   dsvdatenarray[i][6] = html.substring(startd+1,endee).trim();
@@ -110,6 +116,37 @@ for (let i=1; i<max+1; i++ ) {
 
 
 // Ausgabe
+
+// Ermittlung nächstes Spiel mit Auswahl Stuttgart
+let naechstesspiel = 0;
+for (let i=1; i<max+1; i++ ) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == "Auswahl Stuttgart")||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
+    naechstesspiel = i
+    break;
+  }
+}
+
+// Ermittlung übernächstes Spiel mit Auswahl Stuttgart
+let uebernaechstesspiel = 0;
+for (let i=naechstesspiel+1; i<max+1; i++ ) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == "Auswahl Stuttgart")||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
+    uebernaechstesspiel = i
+    break;
+  }
+}
+
+// Ermittlung überübernächstes Spiel mit Auswahl Stuttgart
+let ueberuebernaechstesspiel = 0;
+for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == "Auswahl Stuttgart")||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
+    ueberuebernaechstesspiel = i
+    break;
+  }
+}
+ 
+widget.addText("Nächstes Spiel: " + naechstesspiel);
+widget.addText("Übernächstes Spiel: " + uebernaechstesspiel);
+widget.addText("Überübernächstes Spiel: " + ueberuebernaechstesspiel);
 widget.addText("Anzahl Spiele gesamt: " + max.toString());
 
 
