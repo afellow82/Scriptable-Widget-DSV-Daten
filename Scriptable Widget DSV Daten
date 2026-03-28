@@ -3,11 +3,15 @@
 
 
 // Version
-const version = "0.01";
+const version = "0.02";
 // 28.03.2026
 
 
-// ToDo / Bugs / Ideen: <keine>
+// ToDo / Bugs / Ideen: 
+// - Ausweitung auf U14 (Parameter?)
+// - Gastmannschaft auslesen (auch ohne Bild)
+// - Ergebnis auslesen
+// - Darstellung nächste 5 Spiele in Widget (wenn noch mehr als 5 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga)
 
 
 // Debuglevel
@@ -41,15 +45,16 @@ let max = anzahlspielegesamt(html);
 // #2 - Uhrzeit
 // #3 - Heimmannschaft
 // #4 - Gastmannschaft
-// #5 - Ergebnis
+// #5 - Spielort
+// #6 - Ergebnis
 const dsvdatenarray = [];
 // dsvdatenarray initialisieren
 for (let i=1; i<max+1; i++ ) {
-  dsvdatenarray[i] = ["0","01.01.01","00:00","Mannschaft1","Mannschaft2"];
+  dsvdatenarray[i] = ["0","01.01.01","00:00","Mannschaft1","Mannschaft2","X:X"];
 }
 
 
-// Spieltag und Datum auslesen und in dsvdatenarray schreiben
+// Daten von Seite auslesen und in dsvdatenarray schreiben
 for (let i=1; i<max+1; i++ ) {
   let suchstring = "<td align='center'>" + i + "<";
   let start = html.indexOf(suchstring);
@@ -61,16 +66,29 @@ for (let i=1; i<max+1; i++ ) {
   dsvdatenarray[i][1] = html.substring(starta+6,endedatum).trim();
   dsvdatenarray[i][2] = html.substring(endedatum+9,endedatum+18).trim();
   
-  let test = html.substring(endedatum+48,endedatum+51).trim();
-  
-  // Manchmal ist ein Bild in der Quelle vorhanden, welches übersprungen werden muss
-  if (test == "div") {
-    let startb = html.indexOf("</div></td>", endedatum+18);
+      // Manchmal gibt es vor der Heimmannschaft ein Bild in der Quelle, welches übersprungen werden muss
+  let test1 = html.substring(endedatum+48,endedatum+51).trim();
+  if (test1 == "div") {
+    let startb = html.indexOf("</div></td>",endedatum+18);
     endem1 = html.indexOf("</td>",startb+15);
     dsvdatenarray[i][3] = html.substring(startb+15,endem1).trim();
   } else {
     dsvdatenarray[i][3] = html.substring(endedatum+56,endem1).trim();
   }
+  
+  // Manchmal gibt es vor der Gastmannschaft ein Bild in der Quelle, welches übersprungen werden muss
+  
+  let endem2 = html.indexOf("</td>",endem1+38);
+  let test2 = html.substring(endem1+30,endem1+33).trim();  
+  console.log(test2);
+  if (test2 == "div") {
+    let startc = html.indexOf("</div></td>",endem1+33);
+    endem2 = html.indexOf("</td>",startc+15);
+    dsvdatenarray[i][4] = html.substring(startc+15,endem2).trim();
+  } else {
+    dsvdatenarray[i][4] = html.substring(endem1+38,endem2).trim();
+  }
+           
   console.log("-----------------");
   console.log("dsvdatenarray Nr.: " + i);
   console.log(dsvdatenarray[i][0]);
@@ -78,7 +96,9 @@ for (let i=1; i<max+1; i++ ) {
   console.log(dsvdatenarray[i][2]);
   console.log(dsvdatenarray[i][3]);
   console.log(dsvdatenarray[i][4]);
-}  
+  console.log(dsvdatenarray[i][5]);
+  console.log(dsvdatenarray[i][6]);
+}   
 
 
 // Ausgabe
