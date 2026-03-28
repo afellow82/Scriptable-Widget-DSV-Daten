@@ -3,14 +3,12 @@
 
 
 // Version
-const version = "0.03";
+const version = "0.04";
 // 28.03.2026
 
 
 // ToDo / Bugs / Ideen: 
 // - Ausweitung auf U14 (Parameter?)
-// - Spielort auslesen
-// - Ergebnis auslesen
 // - Darstellung nächste 5 Spiele in Widget (wenn noch mehr als 5 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga, Nennung X von Y Spielen bereits gespielt)
 
 
@@ -87,6 +85,16 @@ for (let i=1; i<max+1; i++ ) {
   } else {
     dsvdatenarray[i][4] = html.substring(endem1+38,endem2).trim();
   }
+  
+  let endeo = html.indexOf("</td>",endem2+9);
+  dsvdatenarray[i][5] = html.substring(endem2+9,endeo).trim();
+    
+  //Dagersheim</td><td><a href='https://dsvdaten.dsv.de/Modules/WB/Game.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L&GameID=7'>12:13</a></td><td>(2:5, 3:3, 4:4, 3:1)</td></tr>
+  //Esslingen</td><td><a href='https://dsvdaten.dsv.de/Modules/WB/Game.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L&GameID=42'>mehr...</a></td><td></td></tr>    
+  let startd = html.indexOf(">",endeo+11);
+  let endee = html.indexOf("</a>",startd);
+  dsvdatenarray[i][6] = html.substring(startd+1,endee).trim();
+          
   if (debuglevel > 0) {         
     console.log("-----------------");
     console.log("dsvdatenarray Nr.: " + i);
