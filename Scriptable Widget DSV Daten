@@ -41,10 +41,11 @@ let max = anzahlspielegesamt(html);
 // #2 - Uhrzeit
 // #3 - Heimmannschaft
 // #4 - Gastmannschaft
+// #5 - Ergebnis
 const dsvdatenarray = [];
 // dsvdatenarray initialisieren
 for (let i=1; i<max+1; i++ ) {
-    dsvdatenarray[i] = ["0","01.01.01","00:00","Mannschaft1","Mannschaft2"];
+  dsvdatenarray[i] = ["0","01.01.01","00:00","Mannschaft1","Mannschaft2"];
 }
 
 
@@ -64,12 +65,12 @@ for (let i=1; i<max+1; i++ ) {
   
   // Manchmal ist ein Bild in der Quelle vorhanden, welches übersprungen werden muss
   if (test == "div") {
-          let startb = html.indexOf("</div></td>", endedatum+18);
-          endem1 = html.indexOf("</td>",startb+15);
-          dsvdatenarray[i][3] = html.substring(startb+15,endem1).trim();
-      } else {
-          dsvdatenarray[i][3] = html.substring(endedatum+56,endem1).trim();
-      }
+    let startb = html.indexOf("</div></td>", endedatum+18);
+    endem1 = html.indexOf("</td>",startb+15);
+    dsvdatenarray[i][3] = html.substring(startb+15,endem1).trim();
+  } else {
+    dsvdatenarray[i][3] = html.substring(endedatum+56,endem1).trim();
+  }
   console.log("-----------------");
   console.log("dsvdatenarray Nr.: " + i);
   console.log(dsvdatenarray[i][0]);
@@ -90,14 +91,13 @@ widget.presentMedium();
 
 // Funktion Ermittlung Gesamtanzahl der Spiele
 function anzahlspielegesamt(html) {
-    let max = 0;
-    for (let i=0; i<100; i++ ) {
-        let suchstring = "<td align='center'>" + i + "<";
-        let test = html.includes(suchstring);
-        if (test == true) {
-            //console.log(suchstring);
-            max = max + 1;
-        }
-    } 
-    return max
- }
+  let max = 0;
+  for (let i=0; i<100; i++ ) {
+    let suchstring = "<td align='center'>" + i + "<";
+    let test = html.includes(suchstring);
+    if (test == true) {
+      max = max + 1;
+    }
+  } 
+  return max
+}
