@@ -3,17 +3,18 @@
 
 
 // Version
-const version = "0.05";
+const version = "0.06";
 // 28.03.2026
 
 
 // ToDo / Bugs / Ideen: 
 // - Ausweitung auf U14 (Parameter?)
-// - Darstellung nächste 3 Spiele in Widget (wenn noch mehr als 5 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga, Nennung X von Y Spielen bereits gespielt)
+// - Darstellung nächste 3 Spiele in Widget (wenn noch mehr als 3 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga, Nennung X von Y Spielen bereits gespielt)
+// - Ausgabe der nächsten Spiele in Funktion packen
 
 
 // Debuglevel
-let debuglevel = 0;
+let debuglevel = 1;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 // 2 - Analyse Werte und Einfärben Stacks
@@ -115,8 +116,12 @@ for (let i=1; i<max+1; i++ ) {
 }   
 
 
-// Ausgabe
+// Definition Schriftarten
+let textschriftart = Font.regularSystemFont(10);
+let textschriftartfett = Font.boldSystemFont(10);
 
+
+// Ausgabe
 // Ermittlung nächstes Spiel mit Auswahl Stuttgart
 let naechstesspiel = 0;
 for (let i=1; i<max+1; i++ ) {
@@ -143,12 +148,53 @@ for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
     break;
   }
 }
- 
-widget.addText("Nächstes Spiel: " + naechstesspiel);
-widget.addText("Übernächstes Spiel: " + uebernaechstesspiel);
-widget.addText("Überübernächstes Spiel: " + ueberuebernaechstesspiel);
-widget.addText("Anzahl Spiele gesamt: " + max.toString());
 
+let ueberschrift = widget.addText("Nächste Spiele Auswahl Stuttgart (U12):");
+ueberschrift.font = textschriftartfett;
+
+let textnaechstesspiel = "FEHLER"
+if (naechstesspiel != 0) {
+  if (dsvdatenarray[naechstesspiel][3] == "Auswahl Stuttgart") {
+    textnaechstesspiel = widget.addText(dsvdatenarray[naechstesspiel][1] + " " + dsvdatenarray[naechstesspiel][2] + " " + dsvdatenarray[naechstesspiel][4] + " [" + dsvdatenarray[naechstesspiel][5] + "]");
+    textnaechstesspiel.font = textschriftart;
+  }
+  if (dsvdatenarray[naechstesspiel][4] == "Auswahl Stuttgart") {
+    textnaechstesspiel = widget.addText(dsvdatenarray[naechstesspiel][1] + " " + dsvdatenarray[naechstesspiel][2] + " " + dsvdatenarray[naechstesspiel][3] + " [" + dsvdatenarray[naechstesspiel][5] + "]");
+    textnaechstesspiel.font = textschriftart;
+  }
+}
+
+let textuebernaechstesspiel = "FEHLER"
+if (uebernaechstesspiel != 0) {
+  if (dsvdatenarray[uebernaechstesspiel][3] == "Auswahl Stuttgart") {
+    textuebernaechstesspiel = widget.addText(dsvdatenarray[uebernaechstesspiel][1] + " " + dsvdatenarray[uebernaechstesspiel][2] + " " + dsvdatenarray[uebernaechstesspiel][4] + " [" + dsvdatenarray[uebernaechstesspiel][5] + "]");
+    textuebernaechstesspiel.font = textschriftart;
+  }
+  if (dsvdatenarray[uebernaechstesspiel][4] == "Auswahl Stuttgart") {
+    textuebernaechstesspiel = widget.addText(dsvdatenarray[uebernaechstesspiel][1] + " " + dsvdatenarray[uebernaechstesspiel][2] + " " + dsvdatenarray[uebernaechstesspiel][3] + " [" + dsvdatenarray[uebernaechstesspiel][5] + "]");
+    textuebernaechstesspiel.font = textschriftart;
+  }
+}
+
+let textueberuebernaechstesspiel = "FEHLER"
+if (ueberuebernaechstesspiel != 0) {
+  if (dsvdatenarray[ueberuebernaechstesspiel][3] == "Auswahl Stuttgart") {
+    textueberuebernaechstesspiel = widget.addText(dsvdatenarray[ueberuebernaechstesspiel][1] + " " + dsvdatenarray[ueberuebernaechstesspiel][2] + " " + dsvdatenarray[ueberuebernaechstesspiel][4] + " [" + dsvdatenarray[ueberuebernaechstesspiel][5] + "]");
+    textueberuebernaechstesspiel.font = textschriftart;
+  }
+  if (dsvdatenarray[ueberuebernaechstesspiel][4] == "Auswahl Stuttgart") {
+    textueberuebernaechstesspiel = widget.addText(dsvdatenarray[ueberuebernaechstesspiel][1] + " " + dsvdatenarray[ueberuebernaechstesspiel][2] + " " + dsvdatenarray[ueberuebernaechstesspiel][3] + " [" + dsvdatenarray[ueberuebernaechstesspiel][5] + "]");
+    textueberuebernaechstesspiel.font = textschriftart;
+  }
+}
+
+if (debuglevel > 0) {         
+  console.log("-----------------");
+  console.log("Nächstes Spiel: " + naechstesspiel);
+  console.log("Übernächstes Spiel: " + uebernaechstesspiel);
+  console.log("Überübernächstes Spiel: " + ueberuebernaechstesspiel);
+  console.log("Anzahl Spiele gesamt: " + max.toString());
+}
 
 // Widget starten
 widget.presentMedium();
