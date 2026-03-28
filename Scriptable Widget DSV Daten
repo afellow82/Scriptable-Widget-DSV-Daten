@@ -36,15 +36,15 @@ let widget = new ListWidget();
 widget.setPadding(10, 5, 10, 5);
 let max = anzahlspielegesamt(html);
 
-// #1 - Spieltag
-// #2 - Datum
+// #0 - Spieltag
+// #1 - Datum
+// #2 - Uhrzeit
 // #3 - Heimmannschaft
 // #4 - Gastmannschaft
 const dsvdatenarray = [];
-
 // dsvdatenarray initialisieren
 for (let i=1; i<max+1; i++ ) {
-    dsvdatenarray[i] = ["0","01.01.01","Mannschaft1","Mannschaft2"];
+    dsvdatenarray[i] = ["0","01.01.01","00:00","Mannschaft1","Mannschaft2"];
 }
 
 
@@ -54,78 +54,39 @@ for (let i=1; i<max+1; i++ ) {
   let start = html.indexOf(suchstring);
   let starta = html.indexOf("<nobr>", start);
   let endedatum = html.indexOf("</nobr>", start);
-  dsvdatenarray[i][1] = i;
-  dsvdatenarray[i][2] = html.substring(starta+6,endedatum).trim();
+  let endem1 = html.indexOf("</td>",endedatum+56);
+  
+  dsvdatenarray[i][0] = i;
+  dsvdatenarray[i][1] = html.substring(starta+6,endedatum).trim();
+  dsvdatenarray[i][2] = html.substring(endedatum+9,endedatum+18).trim();
+  
+  let test = html.substring(endedatum+48,endedatum+51).trim();
+  
+  // Manchmal ist ein Bild in der Quelle vorhanden, welches übersprungen werden muss
+  if (test == "div") {
+          let startb = html.indexOf("</div></td>", endedatum+18);
+          endem1 = html.indexOf("</td>",startb+15);
+          dsvdatenarray[i][3] = html.substring(startb+15,endem1).trim();
+      } else {
+          dsvdatenarray[i][3] = html.substring(endedatum+56,endem1).trim();
+      }
+  console.log("-----------------");
+  console.log("dsvdatenarray Nr.: " + i);
+  console.log(dsvdatenarray[i][0]);
   console.log(dsvdatenarray[i][1]);
   console.log(dsvdatenarray[i][2]);
+  console.log(dsvdatenarray[i][3]);
+  console.log(dsvdatenarray[i][4]);
 }  
-
 
 
 // Ausgabe
 widget.addText("Anzahl Spiele gesamt: " + max.toString());
-//zerlegung(html,max);
-//widget.addText("Anzahl Spiele Auswahl Stuttgart: " + anzahlspieleas().toString());
 
-//console.log("Datenarray[max-1]:" + dsvdatenarray[max-1]);
-//console.log("Datenarray[max]:" +dsvdatenarray[max]);
 
 // Widget starten
 widget.presentMedium();
 
-
-
-
-/* ZERLEGUNG KLAPPT NICHT, WEIL SPIELE NICHT KORREKT DURCHNUMMERIERT
-//Funktion Zerlegung Seite in Teilabschnitte
-function zerlegung(html,max) {
-    for (let i=1; i<max+1; i++ ) {
-        let stringstart = "<td align='center'>" + i + "<";
-        let stringende =  "<td align='center'>" + (i+1) + "<";
-        let start = html.indexOf(stringstart);
-        let ende = html.indexOf(stringende);
-        
-        console.log(i)
-        console.log(stringstart)
-        console.log(start);
-        console.log(stringende)
-        console.log(ende);
-
-        if (i===(max)) {
-            dsvdatenarray[i] = html.substring(start).trim();
-        } else {
-            dsvdatenarray[i] = html.substring(start,ende).trim();
-        }
-    }
-}
-
-// Funktion Ermittlung Anzahl Spiele Auswahl Stuttgart
-function anzahlspieleas() {
-    let anz = 0;
-    // Jeden Abschnitt auf "Auswahl Stuttgart" prüfen
-    for (let i=1; i<max+1; i++ ) {
-        if (dsvdatenarray[i].includes("Auswahl Stuttgart")) {
-            anz=anz+1;
-            console.log("Gefunden in " + i);
-        }
-    }
-    return anz;
-}
-
-
-// Funktion Ermittlung Anzahl Spiele Auswahl Stuttgart NEU
-function anzahlspieleas() {
-    let anz = 0;
-    for (let i=1; i<max+1; i++ ) {
-          let stringstart = "<td align='center'>" + i + "<";
-          if (dsvdatenarray[i].includes("Auswahl Stuttgart")) {
-            anz=anz+1;
-            console.log("Gefunden in " + i);
-        }
-    }
-    return anz;
-}
-*/
 
 // Funktion Ermittlung Gesamtanzahl der Spiele
 function anzahlspielegesamt(html) {
@@ -137,29 +98,6 @@ function anzahlspielegesamt(html) {
             //console.log(suchstring);
             max = max + 1;
         }
-    }
-    
-    
-    /*
-    /Regenmenge im Code finden
-    let rmstart = html.indexOf(zeitraum);
-    let rmastart = html.indexOf('swg-col-wv2 swg-row', rmstart);
-    let rmteststring = html.substring(rmastart+21, rmastart+61).trim();
-    
-    //Sonderfälle identifizieren
-    let rmtest = rmteststring.includes('&#8239;')
-    let rmtest2 = rmteststring.includes('&lt;')
-    //Test widget.addText(rmteststring)
-    //Test widget.addText(rmtest.toString());
-    //Test widget.addText(rmtest2.toString());
-    
-    if (rmtest2 == true) {
-        let rmbstart = html.indexOf('&lt;', rmastart);
-        let rmende = html.indexOf('&#8239;', rmastart);
-        let rmstring = html.substring(rmbstart+4, rmende).trim();
-        regenmenge = Number(rmstring.replace(",", "."));
-        */
-    
-    
+    } 
     return max
  }
