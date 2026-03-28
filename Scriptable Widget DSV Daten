@@ -3,15 +3,15 @@
 
 
 // Version
-const version = "0.02";
+const version = "0.03";
 // 28.03.2026
 
 
 // ToDo / Bugs / Ideen: 
 // - Ausweitung auf U14 (Parameter?)
-// - Gastmannschaft auslesen (auch ohne Bild)
+// - Spielort auslesen
 // - Ergebnis auslesen
-// - Darstellung nächste 5 Spiele in Widget (wenn noch mehr als 5 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga)
+// - Darstellung nächste 5 Spiele in Widget (wenn noch mehr als 5 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga, Nennung X von Y Spielen bereits gespielt)
 
 
 // Debuglevel
@@ -49,8 +49,8 @@ let max = anzahlspielegesamt(html);
 // #6 - Ergebnis
 const dsvdatenarray = [];
 // dsvdatenarray initialisieren
-for (let i=1; i<max+1; i++ ) {
-  dsvdatenarray[i] = ["0","01.01.01","00:00","Mannschaft1","Mannschaft2","X:X"];
+for (let i=1; i < max+1; i++ ) {
+  dsvdatenarray[i] = ["0","01.01.01","00:00","Heimmannschaft","Gastmannschaft","Spielort","X:X"];
 }
 
 
@@ -80,7 +80,6 @@ for (let i=1; i<max+1; i++ ) {
   
   let endem2 = html.indexOf("</td>",endem1+38);
   let test2 = html.substring(endem1+30,endem1+33).trim();  
-  console.log(test2);
   if (test2 == "div") {
     let startc = html.indexOf("</div></td>",endem1+33);
     endem2 = html.indexOf("</td>",startc+15);
@@ -88,16 +87,17 @@ for (let i=1; i<max+1; i++ ) {
   } else {
     dsvdatenarray[i][4] = html.substring(endem1+38,endem2).trim();
   }
-           
-  console.log("-----------------");
-  console.log("dsvdatenarray Nr.: " + i);
-  console.log(dsvdatenarray[i][0]);
-  console.log(dsvdatenarray[i][1]);
-  console.log(dsvdatenarray[i][2]);
-  console.log(dsvdatenarray[i][3]);
-  console.log(dsvdatenarray[i][4]);
-  console.log(dsvdatenarray[i][5]);
-  console.log(dsvdatenarray[i][6]);
+  if (debuglevel > 0) {         
+    console.log("-----------------");
+    console.log("dsvdatenarray Nr.: " + i);
+    console.log(dsvdatenarray[i][0]);
+    console.log(dsvdatenarray[i][1]);
+    console.log(dsvdatenarray[i][2]);
+    console.log(dsvdatenarray[i][3]);
+    console.log(dsvdatenarray[i][4]);
+    console.log(dsvdatenarray[i][5]);
+    console.log(dsvdatenarray[i][6]);
+  }
 }   
 
 
