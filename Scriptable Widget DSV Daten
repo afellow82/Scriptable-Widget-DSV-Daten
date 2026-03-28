@@ -3,7 +3,7 @@
 
 
 // Version
-const version = "0.06";
+const version = "0.07";
 // 28.03.2026
 
 
@@ -11,6 +11,9 @@ const version = "0.06";
 // - Ausweitung auf U14 (Parameter?)
 // - Darstellung nächste 3 Spiele in Widget (wenn noch mehr als 3 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga, Nennung X von Y Spielen bereits gespielt)
 // - Ausgabe der nächsten Spiele in Funktion packen
+// - Spielort in nächste Zeile, um Zeilenumbruch zu verhindern (z. B. "(in Esslingen)")
+// - evtl. Fortschrittsbalken für Ligafortschritt
+// - Blaue Hintergrundfarbe, Wassersymbol?
 
 
 // Debuglevel
@@ -20,8 +23,17 @@ let debuglevel = 1;
 // 2 - Analyse Werte und Einfärben Stacks
 
 
-//Daten von Webseite holen
-const url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L";
+// Konfiguration Liga (U12 oder U14)
+const liga = "U14";
+
+
+// Holen der Daten von Webseite
+// Webseite U12: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L
+// Webseite U14: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L
+let url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L";
+if (liga == "U14") {
+  url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L";
+}
 const wv = new WebView();
 await wv.loadURL(url);
 const html = await wv.evaluateJavaScript(`
@@ -117,6 +129,7 @@ for (let i=1; i<max+1; i++ ) {
 
 
 // Definition Schriftarten
+let titelschriftart = Font.boldSystemFont(12);
 let textschriftart = Font.regularSystemFont(10);
 let textschriftartfett = Font.boldSystemFont(10);
 
@@ -149,8 +162,24 @@ for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
   }
 }
 
-let ueberschrift = widget.addText("Nächste Spiele Auswahl Stuttgart (U12):");
+let titel = widget.addText(`Wasserball Liga Baden-Württemberg ${liga}`);
+titel.font = titelschriftart;
+
+// Ermittlung gespielte Spiele in Liga
+let gespieltespiele = 0;
+for (let i=1; i<max+1; i++ ) {
+  if (dsvdatenarray[i][6] != "mehr...") {
+    gespieltespiele = gespieltespiele + 1;
+  }
+}
+let fortschrittliga = widget.addText(`(${gespieltespiele} von ${max} Spielen absolviert)`);
+fortschrittliga.font = textschriftart;
+
+widget.addSpacer();
+
+let ueberschrift = widget.addText("Nächste Spiele Auswahl Stuttgart:");
 ueberschrift.font = textschriftartfett;
+
 
 let textnaechstesspiel = "FEHLER"
 if (naechstesspiel != 0) {
@@ -195,6 +224,8 @@ if (debuglevel > 0) {
   console.log("Überübernächstes Spiel: " + ueberuebernaechstesspiel);
   console.log("Anzahl Spiele gesamt: " + max.toString());
 }
+
+widget.addSpacer();
 
 // Widget starten
 widget.presentMedium();
