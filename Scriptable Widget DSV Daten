@@ -8,12 +8,14 @@ const version = "0.07";
 
 
 // ToDo / Bugs / Ideen: 
-// - Ausweitung auf U14 (Parameter?)
-// - Darstellung nächste 3 Spiele in Widget (wenn noch mehr als 3 Spiele übrig, sonst nur letzte Spiele ohne Ergebnis, Nennung Liga, Nennung X von Y Spielen bereits gespielt)
+// - Umschaltung Liga U12/U14 mit Parameter
 // - Ausgabe der nächsten Spiele in Funktion packen
 // - Spielort in nächste Zeile, um Zeilenumbruch zu verhindern (z. B. "(in Esslingen)")
 // - evtl. Fortschrittsbalken für Ligafortschritt
 // - Blaue Hintergrundfarbe, Wassersymbol?
+// - Mausklick öffnet Liga-Internetseite
+// - Version und Datum einfügen
+// - Updater bauen > Widget bei Tom installieren
 
 
 // Debuglevel
