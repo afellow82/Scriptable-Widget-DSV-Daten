@@ -3,7 +3,7 @@
 
 
 // Version
-const version = "0.10";
+const version = "0.11";
 // 29.03.2026
 
 
@@ -12,7 +12,7 @@ const version = "0.10";
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht)
 // - Umschaltung Liga U12/U14 mit Parameter
 // - Fortschrittsbalken für Ligafortschritt
-// - Blaue Hintergrundfarbe, Wassersymbol?
+// - Wasser- oder Ballsymbol oben rechts
 // - Updater bauen > Widget bei Tom installieren
 
 
@@ -24,7 +24,7 @@ let debuglevel = 0;
 
 
 // Konfiguration Liga (U12 oder U14) und Mannschaft
-const liga = "U12";
+const liga = "U14";
 const mannschaft = "Auswahl Stuttgart";
 
 
@@ -49,6 +49,7 @@ const html = await wv.evaluateJavaScript(`
 
 // Widget initialisieren
 let widget = new ListWidget();
+widget.backgroundColor = new Color("#4FC3F7");
 widget.setPadding(10, 20, 10, 20);
 let max = anzahlspielegesamt(html);
 let heute = new Date();
@@ -134,10 +135,15 @@ for (let i=1; i<max+1; i++ ) {
 
 // Definition Schriftarten
 let titelschriftart = Font.boldSystemFont(12);
-let textschriftart = Font.regularSystemFont(10);
+let textschriftart = Font.regularSystemFont(11);
+let textkursivschriftart = Font.italicSystemFont(10);
 let textschriftartfett = Font.boldSystemFont(10);
 let sehrkleinschriftart = Font.regularSystemFont(7);
-let farbefooter = Color.lightGray();
+let farbefooter = Color.darkGray();
+let textfarbe = Color.dynamic(
+  new Color("#000000"), // Light Mode → schwarz
+  new Color("#000000")  // Dark Mode → schwarz
+)
 
 
 // Ausgabe
@@ -170,6 +176,7 @@ for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
 
 let titel = widget.addText(`Wasserball Liga Baden-Württemberg ${liga}`);
 titel.font = titelschriftart;
+titel.textColor=textfarbe;
 
 // Ermittlung gespielte Spiele in Liga
 let gespieltespiele = 0;
@@ -180,11 +187,13 @@ for (let i=1; i<max+1; i++ ) {
 }
 let fortschrittliga = widget.addText(`(${gespieltespiele} von ${max} Spielen absolviert)`);
 fortschrittliga.font = textschriftart;
+fortschrittliga.textColor=textfarbe;
 
 widget.addSpacer();
 
 let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft}:`);
 ueberschrift.font = textschriftartfett;
+ueberschrift.textColor=textfarbe;
 
 spielausgabe(naechstesspiel);
 spielausgabe(uebernaechstesspiel);
@@ -245,10 +254,11 @@ function anzahlspielegesamt(html) {
 function spielausgabe(nr) {
   let textnaechstesspiel = "FEHLER"
   if (nr != 0) {
-    text1 = widget.addText(dsvdatenarray[nr][3] + " - " + dsvdatenarray[nr][4]);
+    text1 = widget.addText(" ▶︎ " + dsvdatenarray[nr][3] + " - " + dsvdatenarray[nr][4]);
     text1.font = textschriftart;  
-    text2 = widget.addText(dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5]);
-    text2.font = textschriftart; 
-    text2.textColor=farbefooter;
+    text1.textColor=textfarbe;
+    text2 = widget.addText("     " + dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5]);
+    text2.font = textkursivschriftart;
+    text2.textColor=textfarbe;
   }
 }
