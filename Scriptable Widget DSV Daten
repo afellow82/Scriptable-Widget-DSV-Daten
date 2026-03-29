@@ -3,21 +3,19 @@
 
 
 // Version
-const version = "0.08";
+const version = "0.09";
 // 29.03.2026
 
 
 // ToDo / Bugs / Ideen:
-// - Bug: Inhalt Widget wird auf iPhone nicht angezeigt
+// - Bug: Inhalt Widget wird auf iPhone nicht angezeigt (reddit um Hilfe gefragt)
+// - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht)
 // - Umschaltung Liga U12/U14 mit Parameter
 // - Ausgabe der nächsten Spiele in Funktion packen
 // - Spielort in nächste Zeile, um Zeilenumbruch zu verhindern (z. B. "(in Esslingen)")
-// - evtl. Fortschrittsbalken für Ligafortschritt
+// - Fortschrittsbalken für Ligafortschritt
 // - Blaue Hintergrundfarbe, Wassersymbol?
-// - Mausklick öffnet Liga-Internetseite
-// - Version und Datum einfügen
 // - Updater bauen > Widget bei Tom installieren
-// - Konstante Mannschaft "const mannschaft = "Auswahl Stuttgart"" einführen
 
 
 // Debuglevel
@@ -27,8 +25,9 @@ let debuglevel = 1;
 // 2 - Analyse Werte und Einfärben Stacks
 
 
-// Konfiguration Liga (U12 oder U14)
+// Konfiguration Liga (U12 oder U14) und Mannschaft
 const liga = "U14";
+const mannschaft = "Auswahl Stuttgart";
 
 
 // Holen der Daten von Webseite
@@ -54,6 +53,9 @@ const html = await wv.evaluateJavaScript(`
 let widget = new ListWidget();
 widget.setPadding(10, 20, 10, 20);
 let max = anzahlspielegesamt(html);
+let heute = new Date();
+widget.url = url;
+
 
 // #0 - Spieltag
 // #1 - Datum
@@ -136,13 +138,15 @@ for (let i=1; i<max+1; i++ ) {
 let titelschriftart = Font.boldSystemFont(12);
 let textschriftart = Font.regularSystemFont(10);
 let textschriftartfett = Font.boldSystemFont(10);
+let sehrkleinschriftart = Font.regularSystemFont(7);
+let farbefooter = Color.lightGray();
 
 
 // Ausgabe
 // Ermittlung nächstes Spiel mit Auswahl Stuttgart
 let naechstesspiel = 0;
 for (let i=1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == "Auswahl Stuttgart")||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
     naechstesspiel = i
     break;
   }
@@ -151,7 +155,7 @@ for (let i=1; i<max+1; i++ ) {
 // Ermittlung übernächstes Spiel mit Auswahl Stuttgart
 let uebernaechstesspiel = 0;
 for (let i=naechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == "Auswahl Stuttgart")||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
     uebernaechstesspiel = i
     break;
   }
@@ -160,7 +164,7 @@ for (let i=naechstesspiel+1; i<max+1; i++ ) {
 // Ermittlung überübernächstes Spiel mit Auswahl Stuttgart
 let ueberuebernaechstesspiel = 0;
 for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == "Auswahl Stuttgart")||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
     ueberuebernaechstesspiel = i
     break;
   }
@@ -181,17 +185,17 @@ fortschrittliga.font = textschriftart;
 
 widget.addSpacer();
 
-let ueberschrift = widget.addText("Nächste Spiele Auswahl Stuttgart:");
+let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft}:`);
 ueberschrift.font = textschriftartfett;
 
 
 let textnaechstesspiel = "FEHLER"
 if (naechstesspiel != 0) {
-  if (dsvdatenarray[naechstesspiel][3] == "Auswahl Stuttgart") {
+  if (dsvdatenarray[naechstesspiel][3] == mannschaft) {
     textnaechstesspiel = widget.addText(dsvdatenarray[naechstesspiel][1] + " " + dsvdatenarray[naechstesspiel][2] + " " + dsvdatenarray[naechstesspiel][4] + " [" + dsvdatenarray[naechstesspiel][5] + "]");
     textnaechstesspiel.font = textschriftart;
   }
-  if (dsvdatenarray[naechstesspiel][4] == "Auswahl Stuttgart") {
+  if (dsvdatenarray[naechstesspiel][4] == mannschaft) {
     textnaechstesspiel = widget.addText(dsvdatenarray[naechstesspiel][1] + " " + dsvdatenarray[naechstesspiel][2] + " " + dsvdatenarray[naechstesspiel][3] + " [" + dsvdatenarray[naechstesspiel][5] + "]");
     textnaechstesspiel.font = textschriftart;
   }
@@ -199,11 +203,11 @@ if (naechstesspiel != 0) {
 
 let textuebernaechstesspiel = "FEHLER"
 if (uebernaechstesspiel != 0) {
-  if (dsvdatenarray[uebernaechstesspiel][3] == "Auswahl Stuttgart") {
+  if (dsvdatenarray[uebernaechstesspiel][3] == mannschaft) {
     textuebernaechstesspiel = widget.addText(dsvdatenarray[uebernaechstesspiel][1] + " " + dsvdatenarray[uebernaechstesspiel][2] + " " + dsvdatenarray[uebernaechstesspiel][4] + " [" + dsvdatenarray[uebernaechstesspiel][5] + "]");
     textuebernaechstesspiel.font = textschriftart;
   }
-  if (dsvdatenarray[uebernaechstesspiel][4] == "Auswahl Stuttgart") {
+  if (dsvdatenarray[uebernaechstesspiel][4] == mannschaft) {
     textuebernaechstesspiel = widget.addText(dsvdatenarray[uebernaechstesspiel][1] + " " + dsvdatenarray[uebernaechstesspiel][2] + " " + dsvdatenarray[uebernaechstesspiel][3] + " [" + dsvdatenarray[uebernaechstesspiel][5] + "]");
     textuebernaechstesspiel.font = textschriftart;
   }
@@ -211,11 +215,11 @@ if (uebernaechstesspiel != 0) {
 
 let textueberuebernaechstesspiel = "FEHLER"
 if (ueberuebernaechstesspiel != 0) {
-  if (dsvdatenarray[ueberuebernaechstesspiel][3] == "Auswahl Stuttgart") {
+  if (dsvdatenarray[ueberuebernaechstesspiel][3] == mannschaft) {
     textueberuebernaechstesspiel = widget.addText(dsvdatenarray[ueberuebernaechstesspiel][1] + " " + dsvdatenarray[ueberuebernaechstesspiel][2] + " " + dsvdatenarray[ueberuebernaechstesspiel][4] + " [" + dsvdatenarray[ueberuebernaechstesspiel][5] + "]");
     textueberuebernaechstesspiel.font = textschriftart;
   }
-  if (dsvdatenarray[ueberuebernaechstesspiel][4] == "Auswahl Stuttgart") {
+  if (dsvdatenarray[ueberuebernaechstesspiel][4] == mannschaft) {
     textueberuebernaechstesspiel = widget.addText(dsvdatenarray[ueberuebernaechstesspiel][1] + " " + dsvdatenarray[ueberuebernaechstesspiel][2] + " " + dsvdatenarray[ueberuebernaechstesspiel][3] + " [" + dsvdatenarray[ueberuebernaechstesspiel][5] + "]");
     textueberuebernaechstesspiel.font = textschriftart;
   }
@@ -230,6 +234,25 @@ if (debuglevel > 0) {
 }
 
 widget.addSpacer();
+
+// Ausgabe Standdatum Anteile, Version und Uhrzeit
+footer = widget.addStack();
+footer.layoutHorizontally();
+
+let stundenaktuell = heute.getHours();
+let stundenaktuelltext = stundenaktuell;
+if (stundenaktuell < 10) {stundenaktuelltext = '0'+ stundenaktuell;}
+let minutenaktuell = heute.getMinutes();
+let minutenaktuelltext = minutenaktuell;
+if (minutenaktuell < 10) {minutenaktuelltext = '0'+ minutenaktuell;}
+
+footer.addSpacer();
+
+versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +']';
+let textzeileversion = footer.addText(versiontext);
+textzeileversion.font=sehrkleinschriftart;
+textzeileversion.textColor=farbefooter;
+
 
 // Widget starten
 Script.setWidget(widget);
