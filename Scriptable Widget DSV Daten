@@ -3,7 +3,7 @@
 
 
 // Version
-const version = "0.11";
+const version = "0.12";
 // 29.03.2026
 
 
@@ -12,7 +12,6 @@ const version = "0.11";
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht)
 // - Umschaltung Liga U12/U14 mit Parameter
 // - Fortschrittsbalken für Ligafortschritt
-// - Wasser- oder Ballsymbol oben rechts
 // - Updater bauen > Widget bei Tom installieren
 
 
@@ -146,7 +145,6 @@ let textfarbe = Color.dynamic(
 )
 
 
-// Ausgabe
 // Ermittlung nächstes Spiel mit Auswahl Stuttgart
 let naechstesspiel = 0;
 for (let i=1; i<max+1; i++ ) {
@@ -174,9 +172,6 @@ for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
   }
 }
 
-let titel = widget.addText(`Wasserball Liga Baden-Württemberg ${liga}`);
-titel.font = titelschriftart;
-titel.textColor=textfarbe;
 
 // Ermittlung gespielte Spiele in Liga
 let gespieltespiele = 0;
@@ -185,9 +180,31 @@ for (let i=1; i<max+1; i++ ) {
     gespieltespiele = gespieltespiele + 1;
   }
 }
-let fortschrittliga = widget.addText(`(${gespieltespiele} von ${max} Spielen absolviert)`);
+
+// Ausgabe
+// Überschrift in Titel
+let titelstack = widget.addStack();
+titelstack.layoutHorizontally();
+let titelspalte1stack = titelstack.addStack();
+titelspalte1stack.layoutVertically();
+let titel = titelspalte1stack.addText(`Wasserball Liga Baden-Württemberg ${liga}`);
+titel.font = titelschriftart;
+titel.textColor=textfarbe;
+
+// Fortschritt Liga in Titel
+let fortschrittliga = titelspalte1stack.addText(`(${gespieltespiele} von ${max} Spielen absolviert)`);
 fortschrittliga.font = textschriftart;
 fortschrittliga.textColor=textfarbe;
+
+// Ballsymbol in Titel    
+titelstack.addSpacer();
+let titelspalte2stack = titelstack.addStack();
+titelspalte2stack.layoutVertically();
+let ballsymbol = SFSymbol.named('volleyball.fill');
+let ballsymbolbild = titelspalte2stack.addImage(ballsymbol.image);
+ballsymbolbild.imageSize = new Size(25, 25);
+ballsymbolbild.tintColor = textfarbe;
+titelstack.addSpacer();
 
 widget.addSpacer();
 
