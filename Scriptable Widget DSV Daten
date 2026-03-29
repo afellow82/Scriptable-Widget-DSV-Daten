@@ -7,7 +7,7 @@ const version = "0.08";
 // 29.03.2026
 
 
-// ToDo / Bugs / Ideen: // 
+// ToDo / Bugs / Ideen:
 // - Bug: Inhalt Widget wird auf iPhone nicht angezeigt
 // - Umschaltung Liga U12/U14 mit Parameter
 // - Ausgabe der nächsten Spiele in Funktion packen
@@ -48,11 +48,6 @@ const html = await wv.evaluateJavaScript(`
     }
     run()
 `,true);
-
-
-if (!html || html.length < 100) {
-  throw new Error("HTML konnte nicht geladen werden");
-}
 
 
 // Widget initialisieren
