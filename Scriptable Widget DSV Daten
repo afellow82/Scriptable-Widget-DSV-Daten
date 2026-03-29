@@ -3,7 +3,7 @@
 
 
 // Version
-const version = "0.09";
+const version = "0.10";
 // 29.03.2026
 
 
@@ -11,22 +11,20 @@ const version = "0.09";
 // - Bug: Inhalt Widget wird auf iPhone nicht angezeigt (reddit um Hilfe gefragt)
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht)
 // - Umschaltung Liga U12/U14 mit Parameter
-// - Ausgabe der nächsten Spiele in Funktion packen
-// - Spielort in nächste Zeile, um Zeilenumbruch zu verhindern (z. B. "(in Esslingen)")
 // - Fortschrittsbalken für Ligafortschritt
 // - Blaue Hintergrundfarbe, Wassersymbol?
 // - Updater bauen > Widget bei Tom installieren
 
 
 // Debuglevel
-let debuglevel = 1;
+let debuglevel = 0;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 // 2 - Analyse Werte und Einfärben Stacks
 
 
 // Konfiguration Liga (U12 oder U14) und Mannschaft
-const liga = "U14";
+const liga = "U12";
 const mannschaft = "Auswahl Stuttgart";
 
 
@@ -188,42 +186,9 @@ widget.addSpacer();
 let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft}:`);
 ueberschrift.font = textschriftartfett;
 
-
-let textnaechstesspiel = "FEHLER"
-if (naechstesspiel != 0) {
-  if (dsvdatenarray[naechstesspiel][3] == mannschaft) {
-    textnaechstesspiel = widget.addText(dsvdatenarray[naechstesspiel][1] + " " + dsvdatenarray[naechstesspiel][2] + " " + dsvdatenarray[naechstesspiel][4] + " [" + dsvdatenarray[naechstesspiel][5] + "]");
-    textnaechstesspiel.font = textschriftart;
-  }
-  if (dsvdatenarray[naechstesspiel][4] == mannschaft) {
-    textnaechstesspiel = widget.addText(dsvdatenarray[naechstesspiel][1] + " " + dsvdatenarray[naechstesspiel][2] + " " + dsvdatenarray[naechstesspiel][3] + " [" + dsvdatenarray[naechstesspiel][5] + "]");
-    textnaechstesspiel.font = textschriftart;
-  }
-}
-
-let textuebernaechstesspiel = "FEHLER"
-if (uebernaechstesspiel != 0) {
-  if (dsvdatenarray[uebernaechstesspiel][3] == mannschaft) {
-    textuebernaechstesspiel = widget.addText(dsvdatenarray[uebernaechstesspiel][1] + " " + dsvdatenarray[uebernaechstesspiel][2] + " " + dsvdatenarray[uebernaechstesspiel][4] + " [" + dsvdatenarray[uebernaechstesspiel][5] + "]");
-    textuebernaechstesspiel.font = textschriftart;
-  }
-  if (dsvdatenarray[uebernaechstesspiel][4] == mannschaft) {
-    textuebernaechstesspiel = widget.addText(dsvdatenarray[uebernaechstesspiel][1] + " " + dsvdatenarray[uebernaechstesspiel][2] + " " + dsvdatenarray[uebernaechstesspiel][3] + " [" + dsvdatenarray[uebernaechstesspiel][5] + "]");
-    textuebernaechstesspiel.font = textschriftart;
-  }
-}
-
-let textueberuebernaechstesspiel = "FEHLER"
-if (ueberuebernaechstesspiel != 0) {
-  if (dsvdatenarray[ueberuebernaechstesspiel][3] == mannschaft) {
-    textueberuebernaechstesspiel = widget.addText(dsvdatenarray[ueberuebernaechstesspiel][1] + " " + dsvdatenarray[ueberuebernaechstesspiel][2] + " " + dsvdatenarray[ueberuebernaechstesspiel][4] + " [" + dsvdatenarray[ueberuebernaechstesspiel][5] + "]");
-    textueberuebernaechstesspiel.font = textschriftart;
-  }
-  if (dsvdatenarray[ueberuebernaechstesspiel][4] == mannschaft) {
-    textueberuebernaechstesspiel = widget.addText(dsvdatenarray[ueberuebernaechstesspiel][1] + " " + dsvdatenarray[ueberuebernaechstesspiel][2] + " " + dsvdatenarray[ueberuebernaechstesspiel][3] + " [" + dsvdatenarray[ueberuebernaechstesspiel][5] + "]");
-    textueberuebernaechstesspiel.font = textschriftart;
-  }
-}
+spielausgabe(naechstesspiel);
+spielausgabe(uebernaechstesspiel);
+spielausgabe(ueberuebernaechstesspiel);
 
 if (debuglevel > 0) {         
   console.log("-----------------");
@@ -235,7 +200,7 @@ if (debuglevel > 0) {
 
 widget.addSpacer();
 
-// Ausgabe Standdatum Anteile, Version und Uhrzeit
+// Ausgabe Version und Uhrzeit
 footer = widget.addStack();
 footer.layoutHorizontally();
 
@@ -261,6 +226,7 @@ if (!config.runsInWidget) {
 }
 Script.complete();
 
+
 // Funktion Ermittlung Gesamtanzahl der Spiele
 function anzahlspielegesamt(html) {
   let max = 0;
@@ -272,4 +238,17 @@ function anzahlspielegesamt(html) {
     }
   } 
   return max
+}
+
+
+// Funktion Ausgabe von Spieldaten
+function spielausgabe(nr) {
+  let textnaechstesspiel = "FEHLER"
+  if (nr != 0) {
+    text1 = widget.addText(dsvdatenarray[nr][3] + " - " + dsvdatenarray[nr][4]);
+    text1.font = textschriftart;  
+    text2 = widget.addText(dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5]);
+    text2.font = textschriftart; 
+    text2.textColor=farbefooter;
+  }
 }
