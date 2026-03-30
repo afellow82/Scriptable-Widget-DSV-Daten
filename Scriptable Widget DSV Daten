@@ -19,7 +19,7 @@ let debuglevel = 0;
 // 1 - Analyse Werte
 
 // Konfiguration Liga (als Parameter) und Mannschaft
-// Parameter "BW U12" (Standardwert wird auch verwendet wenn kein Parameter)
+// Parameter "BW U12" (Standardwert, wird auch verwendet wenn kein Parameter)
 // Parameter "BW U14"
 let liga = "BW U12";
 let param = args.widgetParameter;
@@ -147,7 +147,7 @@ let textfarbe = Color.dynamic(
 )
 
 
-// Ermittlung nächstes Spiel mit Auswahl Stuttgart
+// Ermittlung nächstes Spiel mit konfigurierter Mannschaft
 let naechstesspiel = 0;
 for (let i=1; i<max+1; i++ ) {
   if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
@@ -156,7 +156,7 @@ for (let i=1; i<max+1; i++ ) {
   }
 }
 
-// Ermittlung übernächstes Spiel mit Auswahl Stuttgart
+// Ermittlung übernächstes Spiel mit konfigurierter Mannschaft
 let uebernaechstesspiel = 0;
 for (let i=naechstesspiel+1; i<max+1; i++ ) {
   if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
@@ -165,7 +165,7 @@ for (let i=naechstesspiel+1; i<max+1; i++ ) {
   }
 }
 
-// Ermittlung überübernächstes Spiel mit Auswahl Stuttgart
+// Ermittlung überübernächstes Spiel mit konfigurierter Mannschaft
 let ueberuebernaechstesspiel = 0;
 for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
   if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
