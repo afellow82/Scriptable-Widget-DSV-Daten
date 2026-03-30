@@ -3,27 +3,29 @@
 
 
 // Version
-const version = "0.12";
-// 29.03.2026
+const version = "1.00";
+// 30.03.2026
 
 
 // ToDo / Bugs / Ideen:
 // - Bug: Inhalt Widget wird auf iPhone nicht angezeigt (reddit um Hilfe gefragt)
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht)
-// - Umschaltung Liga U12/U14 mit Parameter
-// - Fortschrittsbalken für Ligafortschritt
-// - Updater bauen > Widget bei Tom installieren
+// - Updater bauen > Widget bei Tom installieren (nur wenn Script auf iPhone läuft)
 
 
 // Debuglevel
 let debuglevel = 0;
 // 0 - keine Analyse
 // 1 - Analyse Werte
-// 2 - Analyse Werte und Einfärben Stacks
 
-
-// Konfiguration Liga (U12 oder U14) und Mannschaft
-const liga = "U14";
+// Konfiguration Liga (als Parameter) und Mannschaft
+// Parameter "BW U12" (Standardwert wird auch verwendet wenn kein Parameter)
+// Parameter "BW U14"
+let liga = "BW U12";
+let param = args.widgetParameter;
+if (param == 'BW U14') {
+  liga = "BW U14";
+}
 const mannschaft = "Auswahl Stuttgart";
 
 
@@ -31,7 +33,7 @@ const mannschaft = "Auswahl Stuttgart";
 // Webseite U12: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L
 // Webseite U14: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L
 let url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L";
-if (liga == "U14") {
+if (liga == "BW U14") {
   url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L";
 }
 const wv = new WebView();
@@ -49,7 +51,7 @@ const html = await wv.evaluateJavaScript(`
 // Widget initialisieren
 let widget = new ListWidget();
 widget.backgroundColor = new Color("#4FC3F7");
-widget.setPadding(10, 20, 10, 20);
+widget.setPadding(10, 10, 10, 10);
 let max = anzahlspielegesamt(html);
 let heute = new Date();
 widget.url = url;
@@ -148,7 +150,7 @@ let textfarbe = Color.dynamic(
 // Ermittlung nächstes Spiel mit Auswahl Stuttgart
 let naechstesspiel = 0;
 for (let i=1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
     naechstesspiel = i
     break;
   }
@@ -157,7 +159,7 @@ for (let i=1; i<max+1; i++ ) {
 // Ermittlung übernächstes Spiel mit Auswahl Stuttgart
 let uebernaechstesspiel = 0;
 for (let i=naechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
     uebernaechstesspiel = i
     break;
   }
@@ -166,7 +168,7 @@ for (let i=naechstesspiel+1; i<max+1; i++ ) {
 // Ermittlung überübernächstes Spiel mit Auswahl Stuttgart
 let ueberuebernaechstesspiel = 0;
 for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == "Auswahl Stuttgart"))) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
     ueberuebernaechstesspiel = i
     break;
   }
@@ -182,12 +184,21 @@ for (let i=1; i<max+1; i++ ) {
 }
 
 // Ausgabe
-// Überschrift in Titel
 let titelstack = widget.addStack();
 titelstack.layoutHorizontally();
+// Ballsymbol in Titel    
+let titelspalte2stack = titelstack.addStack();
+titelspalte2stack.layoutVertically();
+let ballsymbol = SFSymbol.named('volleyball.fill');
+let ballsymbolbild = titelspalte2stack.addImage(ballsymbol.image);
+ballsymbolbild.imageSize = new Size(30, 30);
+ballsymbolbild.tintColor = textfarbe;
+titelstack.addSpacer(10);
+
+// Überschrift in Titel
 let titelspalte1stack = titelstack.addStack();
 titelspalte1stack.layoutVertically();
-let titel = titelspalte1stack.addText(`Wasserball Liga Baden-Württemberg ${liga}`);
+let titel = titelspalte1stack.addText(`Wasserball Liga ${liga}`);
 titel.font = titelschriftart;
 titel.textColor=textfarbe;
 
@@ -195,16 +206,6 @@ titel.textColor=textfarbe;
 let fortschrittliga = titelspalte1stack.addText(`(${gespieltespiele} von ${max} Spielen absolviert)`);
 fortschrittliga.font = textschriftart;
 fortschrittliga.textColor=textfarbe;
-
-// Ballsymbol in Titel    
-titelstack.addSpacer();
-let titelspalte2stack = titelstack.addStack();
-titelspalte2stack.layoutVertically();
-let ballsymbol = SFSymbol.named('volleyball.fill');
-let ballsymbolbild = titelspalte2stack.addImage(ballsymbol.image);
-ballsymbolbild.imageSize = new Size(25, 25);
-ballsymbolbild.tintColor = textfarbe;
-titelstack.addSpacer();
 
 widget.addSpacer();
 
@@ -239,7 +240,7 @@ if (minutenaktuell < 10) {minutenaktuelltext = '0'+ minutenaktuell;}
 
 footer.addSpacer();
 
-versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +']';
+versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +']  ';
 let textzeileversion = footer.addText(versiontext);
 textzeileversion.font=sehrkleinschriftart;
 textzeileversion.textColor=farbefooter;
