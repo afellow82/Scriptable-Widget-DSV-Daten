@@ -1,10 +1,11 @@
 // Widget "DSV Daten"
 // Jens Hamann (j_hamann@gmx.net)
+// Datenabfrage von Reddit-Benutzer nolan17377
 
 
 // Version
-const version = "2.00";
-// 06.04.2026
+const version = "2.01";
+// 16.04.2026
 
 
 // ToDo / Bugs / Ideen:
@@ -272,7 +273,19 @@ function anzahlspielegesamt(html) {
       max = max + 1;
     }
   } 
-  return max
+  return max;
+}
+
+
+// Funktion Umrechnung String in Datum
+function datumsumrechnung(string) {
+  let [day, month, year] = string.split(".")
+  let datum = new Date(Number(year) + 2000, month - 1, day)
+  if (debuglevel > 0) {
+    console.log("String: " + string);
+    console.log("Datum: " + datum);
+  }
+  return datum;
 }
 
 
@@ -286,5 +299,10 @@ function spielausgabe(nr) {
     text2 = widget.addText("     " + dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5]);
     text2.font = textkursivschriftart;
     text2.textColor=textfarbe;
+    // roter text wenn Datum in den nächsten 3 Tagen ist
+    let zeitraum = (Math.floor(datumsumrechnung(dsvdatenarray[nr][1]).getTime() - heute.getTime())/(1000*60*60*24));
+    if (zeitraum <= 4){
+      text2.textColor=Color.red();
+    }
   }
 }
