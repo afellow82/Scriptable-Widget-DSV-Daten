@@ -282,6 +282,7 @@ function datumsumrechnung(string) {
   let [day, month, year] = string.split(".")
   let datum = new Date(Number(year) + 2000, month - 1, day)
   if (debuglevel > 0) {
+    console.log("-----------------");
     console.log("String: " + string);
     console.log("Datum: " + datum);
   }
@@ -299,7 +300,7 @@ function spielausgabe(nr) {
     text2 = widget.addText("     " + dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5]);
     text2.font = textkursivschriftart;
     text2.textColor=textfarbe;
-    // roter text wenn Datum in den nächsten 3 Tagen ist
+    // roter text wenn Datum in den nächsten 4 Tagen ist
     let zeitraum = (Math.floor(datumsumrechnung(dsvdatenarray[nr][1]).getTime() - heute.getTime())/(1000*60*60*24));
     if (zeitraum <= 4){
       text2.textColor=Color.red();
