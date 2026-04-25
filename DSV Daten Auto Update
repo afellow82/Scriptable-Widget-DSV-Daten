@@ -11,13 +11,12 @@ async function main() {
 
 
 // Version
-const version = "2.02";
+const version = "2.03";
 // 25.04.2026
 
 
 // ToDo / Bugs / Ideen:
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht)
-// - Updater bauen > Widget bei Tom installieren (nur wenn Script auf iPhone läuft)
 
 
 // Debuglevel
@@ -25,34 +24,28 @@ let debuglevel = 0;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 
-// Konfiguration Liga (als Parameter) und Mannschaft
+// Konfiguration Liga und Internetseite (als Parameter) und Mannschaft
 // kein Parameter "BW U16" (Standardwert)
 // Parameter "BW U12"
 // Parameter "BW U14"
+// Webseite U16: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L
+// Webseite U12: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L
+// Webseite U14: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L
 let liga = "BW U16";
+let url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L";
 let param = args.widgetParameter;
 if (param == 'BW U12') {
   liga = "BW U12";
+  url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L";
 }
 if (param == 'BW U14') {
   liga = "BW U14";
+  url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L";
 }
 const mannschaft = "Auswahl Stuttgart";
 
 
 // Holen der Daten von Webseite
-// Webseite U16: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L
-// Webseite U12: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L
-// Webseite U14: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L
-
-let url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L";
-if (liga == "BW U12") {
-  url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L";
-}
-if (liga == "BW U14") {
-  url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L";
-}
-
 const req = new Request(url)
   req.headers = {
     "Referer": "https://dsvdaten.dsv.de",
@@ -323,6 +316,7 @@ function spielausgabe(nr) {
     }
   }
 }
+
     
 
 
