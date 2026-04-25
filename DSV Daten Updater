@@ -1,7 +1,7 @@
 // jshint -W119
 // Code source: https://github.com/linusmimietz/Scriptable-Auto-Update
 
-let scriptName = 'Fahrradwetter';
+let scriptName = 'DSVDaten';
 let scriptUrl = 'https://raw.githubusercontent.com/afellow82/Scriptable-Widget-DSV-Daten/refs/heads/main/DSV%20Daten%20Auto%20Update';
 
 let modulePath = await downloadModule(scriptName, scriptUrl); // jshint ignore:line
