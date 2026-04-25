@@ -1,0 +1,338 @@
+// jshint -W119
+// Code source: https://github.com/linusmimietz/Scriptable-Auto-Update
+
+async function main() {
+//AB HIER CODE EINFÜGEN  
+    
+    
+// Widget "DSV Daten"
+// Jens Hamann (j_hamann@gmx.net)
+// Datenabfrage von Reddit-Benutzer nolan17377
+
+
+// Version
+const version = "2.02";
+// 25.04.2026
+
+
+// ToDo / Bugs / Ideen:
+// - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht)
+// - Updater bauen > Widget bei Tom installieren (nur wenn Script auf iPhone läuft)
+
+
+// Debuglevel
+let debuglevel = 0;
+// 0 - keine Analyse
+// 1 - Analyse Werte
+
+// Konfiguration Liga (als Parameter) und Mannschaft
+// kein Parameter "BW U16" (Standardwert)
+// Parameter "BW U12"
+// Parameter "BW U14"
+let liga = "BW U16";
+let param = args.widgetParameter;
+if (param == 'BW U12') {
+  liga = "BW U12";
+}
+if (param == 'BW U14') {
+  liga = "BW U14";
+}
+const mannschaft = "Auswahl Stuttgart";
+
+
+// Holen der Daten von Webseite
+// Webseite U16: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L
+// Webseite U12: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L
+// Webseite U14: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L
+
+let url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L";
+if (liga == "BW U12") {
+  url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L";
+}
+if (liga == "BW U14") {
+  url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L";
+}
+
+const req = new Request(url)
+  req.headers = {
+    "Referer": "https://dsvdaten.dsv.de",
+    "Origin": "https://dsvdaten.dsv.de",
+  }
+const wv = new WebView();
+await wv.loadRequest(req);
+
+const html = await wv.evaluateJavaScript(`
+  // Remove large html elements
+  document.querySelectorAll("svg").forEach(e=>e.remove())
+  document.querySelector("input[name='__VIEWSTATE']").value = ""
+
+  completion(
+    document.querySelector("body").outerHTML
+  )
+`,true)
+if (debuglevel > 0) console.log(url);
+if (debuglevel > 0) console.log(html);
+
+// Widget initialisieren
+let widget = new ListWidget();
+widget.backgroundColor = new Color("#4FC3F7");
+widget.setPadding(10, 10, 10, 10);
+let max = anzahlspielegesamt(html);
+let heute = new Date();
+widget.url = url;
+
+
+// #0 - Spieltag
+// #1 - Datum
+// #2 - Uhrzeit
+// #3 - Heimmannschaft
+// #4 - Gastmannschaft
+// #5 - Spielort
+// #6 - Ergebnis
+const dsvdatenarray = [];
+// dsvdatenarray initialisieren
+for (let i=1; i < max+1; i++ ) {
+  dsvdatenarray[i] = ["0","01.01.01","00:00","Heimmannschaft","Gastmannschaft","Spielort","X:X"];
+}
+
+
+// Daten von Seite auslesen und in dsvdatenarray schreiben
+for (let i=1; i<max+1; i++ ) {
+  let suchstring = "<td align=\"center\">" + i + "<";
+  let start = html.indexOf(suchstring);
+  let starta = html.indexOf("<nobr>", start);
+  let endedatum = html.indexOf("</nobr>", start);
+  let endem1 = html.indexOf("</td>",endedatum+56);
+  
+  //Spieltag
+  dsvdatenarray[i][0] = i;
+  
+  // Datum
+  dsvdatenarray[i][1] = html.substring(starta+6,endedatum).trim();
+  
+  // Uhrzeit
+  dsvdatenarray[i][2] = html.substring(endedatum+9,endedatum+18).trim();
+  
+  //Heimmannschaft
+  // Manchmal gibt es vor der Heimmannschaft ein Bild in der Quelle, welches übersprungen werden muss
+  let test1 = html.substring(endedatum+48,endedatum+51).trim();
+  if (test1 == "div") {
+    let startb = html.indexOf("</div></td>",endedatum+18);
+    endem1 = html.indexOf("</td>",startb+15);
+    dsvdatenarray[i][3] = html.substring(startb+15,endem1).trim();
+  } else {
+    dsvdatenarray[i][3] = html.substring(endedatum+56,endem1).trim();
+  }
+  
+  //Gastmannschaft
+  // Manchmal gibt es vor der Gastmannschaft ein Bild in der Quelle, welches übersprungen werden muss
+  let endem2 = html.indexOf("</td>",endem1+38);
+  let test2 = html.substring(endem1+30,endem1+33).trim();  
+  if (test2 == "div") {
+    let startc = html.indexOf("</div></td>",endem1+33);
+    endem2 = html.indexOf("</td>",startc+15);
+    dsvdatenarray[i][4] = html.substring(startc+15,endem2).trim();
+  } else {
+    dsvdatenarray[i][4] = html.substring(endem1+38,endem2).trim();
+  }
+  
+  //Spielort
+  let endeo = html.indexOf("</td>",endem2+9);
+  dsvdatenarray[i][5] = html.substring(endem2+9,endeo).trim();
+  
+  //Ergebnis
+  let startd = html.indexOf(">",endeo+11);
+  let endee = html.indexOf("</a>",startd);
+  dsvdatenarray[i][6] = html.substring(startd+1,endee).trim();
+          
+  if (debuglevel > 0) {         
+    console.log("-----------------");
+    console.log("dsvdatenarray Nr.: " + i);
+    console.log(dsvdatenarray[i][0]);
+    console.log(dsvdatenarray[i][1]);
+    console.log(dsvdatenarray[i][2]);
+    console.log(dsvdatenarray[i][3]);
+    console.log(dsvdatenarray[i][4]);
+    console.log(dsvdatenarray[i][5]);
+    console.log(dsvdatenarray[i][6]);
+  }
+}   
+
+
+// Definition Schriftarten
+let titelschriftart = Font.boldSystemFont(12);
+let textschriftart = Font.regularSystemFont(11);
+let textkursivschriftart = Font.italicSystemFont(10);
+let textschriftartfett = Font.boldSystemFont(10);
+let sehrkleinschriftart = Font.regularSystemFont(7);
+let farbefooter = Color.darkGray();
+let textfarbe = Color.dynamic(
+  new Color("#000000"), // Light Mode → schwarz
+  new Color("#000000")  // Dark Mode → schwarz
+)
+
+
+// Ermittlung nächstes Spiel mit konfigurierter Mannschaft
+let naechstesspiel = 0;
+for (let i=1; i<max+1; i++ ) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
+    naechstesspiel = i
+    break;
+  }
+}
+
+// Ermittlung übernächstes Spiel mit konfigurierter Mannschaft
+let uebernaechstesspiel = 0;
+for (let i=naechstesspiel+1; i<max+1; i++ ) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
+    uebernaechstesspiel = i
+    break;
+  }
+}
+
+// Ermittlung überübernächstes Spiel mit konfigurierter Mannschaft
+let ueberuebernaechstesspiel = 0;
+for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
+  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
+    ueberuebernaechstesspiel = i
+    break;
+  }
+}
+
+
+// Ermittlung gespielte Spiele in Liga
+let gespieltespiele = 0;
+for (let i=1; i<max+1; i++ ) {
+  if (dsvdatenarray[i][6] != "mehr...") {
+    gespieltespiele = gespieltespiele + 1;
+  }
+}
+
+// Ausgabe
+let titelstack = widget.addStack();
+titelstack.layoutHorizontally();
+// Ballsymbol in Titel    
+let titelspalte2stack = titelstack.addStack();
+titelspalte2stack.layoutVertically();
+let ballsymbol = SFSymbol.named('volleyball.fill');
+let ballsymbolbild = titelspalte2stack.addImage(ballsymbol.image);
+ballsymbolbild.imageSize = new Size(30, 30);
+ballsymbolbild.tintColor = textfarbe;
+titelstack.addSpacer(10);
+
+// Überschrift in Titel
+let titelspalte1stack = titelstack.addStack();
+titelspalte1stack.layoutVertically();
+let titel = titelspalte1stack.addText(`Wasserball Liga ${liga}`);
+titel.font = titelschriftart;
+titel.textColor=textfarbe;
+
+// Fortschritt Liga in Titel
+let fortschrittliga = titelspalte1stack.addText(`(${gespieltespiele} von ${max} Spielen absolviert)`);
+fortschrittliga.font = textschriftart;
+fortschrittliga.textColor=textfarbe;
+
+widget.addSpacer();
+
+let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft}:`);
+ueberschrift.font = textschriftartfett;
+ueberschrift.textColor=textfarbe;
+
+spielausgabe(naechstesspiel);
+spielausgabe(uebernaechstesspiel);
+spielausgabe(ueberuebernaechstesspiel);
+
+if (debuglevel > 0) {         
+  console.log("-----------------");
+  console.log("Nächstes Spiel: " + naechstesspiel);
+  console.log("Übernächstes Spiel: " + uebernaechstesspiel);
+  console.log("Überübernächstes Spiel: " + ueberuebernaechstesspiel);
+  console.log("Anzahl Spiele gesamt: " + max.toString());
+}
+
+widget.addSpacer();
+
+// Ausgabe Version und Uhrzeit
+footer = widget.addStack();
+footer.layoutHorizontally();
+
+let stundenaktuell = heute.getHours();
+let stundenaktuelltext = stundenaktuell;
+if (stundenaktuell < 10) {stundenaktuelltext = '0'+ stundenaktuell;}
+let minutenaktuell = heute.getMinutes();
+let minutenaktuelltext = minutenaktuell;
+if (minutenaktuell < 10) {minutenaktuelltext = '0'+ minutenaktuell;}
+
+footer.addSpacer();
+
+versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +']  ';
+let textzeileversion = footer.addText(versiontext);
+textzeileversion.font=sehrkleinschriftart;
+textzeileversion.textColor=farbefooter;
+
+
+// Widget starten
+Script.setWidget(widget);
+if (!config.runsInWidget) {
+  widget.presentMedium();
+}
+Script.complete();
+
+
+// Funktion Ermittlung Gesamtanzahl der Spiele
+function anzahlspielegesamt(html) {
+  let max = 0;
+  for (let i=0; i<100; i++ ) {
+    let suchstring = "<td align=\"center\">" + i + "<";
+    let test = html.includes(suchstring);
+    if (test == true) {
+      max = max + 1;
+    }
+  } 
+  return max;
+}
+
+
+// Funktion Umrechnung String in Datum
+function datumsumrechnung(string) {
+  let [day, month, year] = string.split(".")
+  let datum = new Date(Number(year) + 2000, month - 1, day)
+  if (debuglevel > 0) {
+    console.log("-----------------");
+    console.log("String: " + string);
+    console.log("Datum: " + datum);
+  }
+  return datum;
+}
+
+
+// Funktion Ausgabe von Spieldaten
+function spielausgabe(nr) {
+  let textnaechstesspiel = "FEHLER"
+  if (nr != 0) {
+    text1 = widget.addText(" ▶︎ " + dsvdatenarray[nr][3] + " - " + dsvdatenarray[nr][4]);
+    text1.font = textschriftart;  
+    text1.textColor=textfarbe;
+    text2 = widget.addText("     " + dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5]);
+    text2.font = textkursivschriftart;
+    text2.textColor=textfarbe;
+    // roter text wenn Datum in den nächsten 4 Tagen ist
+    let zeitraum = (Math.floor(datumsumrechnung(dsvdatenarray[nr][1]).getTime() - heute.getTime())/(1000*60*60*24));
+    if (zeitraum <= 4){
+      text2.textColor=Color.red();
+    }
+  }
+}
+    
+
+
+    
+    
+    
+//BIS HIER CODE EINFÜGEN  
+}
+
+module.exports = {
+  main
+};
+Footer
