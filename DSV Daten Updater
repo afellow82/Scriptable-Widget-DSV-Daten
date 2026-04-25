@@ -23,7 +23,7 @@ async function downloadModule(scriptName, scriptUrl) {
   let moduleFilename = dayNumber.toString() + '.js';
   let modulePath = fm.joinPath(moduleDir, moduleFilename);
   if (fm.fileExists(modulePath)) {
-    console.log('Module already downlaoded ' + moduleFilename);
+    console.log('Module already downloaded ' + moduleFilename);
     return modulePath;
   } else {
     let [moduleFiles, moduleLatestFile] = getModuleVersions(scriptName);
