@@ -17,7 +17,7 @@ let debuglevel = 0;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 
-// Konfiguration Liga und Internetseite (als Parameter) und Mannschaft
+// Konfiguration Liga / Internetseite (als Parameter) und Mannschaft
 // kein Parameter "BW U16" (Standardwert)
 // Parameter "BW U12"
 // Parameter "BW U14"
@@ -63,9 +63,9 @@ if (debuglevel > 0) console.log(html);
 let widget = new ListWidget();
 widget.backgroundColor = new Color("#4FC3F7");
 widget.setPadding(10, 10, 10, 10);
-let max = anzahlspielegesamt(html);
-let heute = new Date();
 widget.url = url;
+let heute = new Date();
+let max = anzahlspielegesamt(html);
 
 
 // #0 - Spieltag
