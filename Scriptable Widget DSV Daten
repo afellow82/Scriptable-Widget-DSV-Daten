@@ -4,12 +4,14 @@
 
 
 // Version
-const version = "2.04gpt";
-// 25.04.2026
+const version = "2.05";
+// 26.04.2026
 
 
 // ToDo / Bugs / Ideen:
-// - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht)
+// - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
+// - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT möglich über separate Caches, aber viele Codeänderungen notwendig
+// - evtl. Performance-Probleme mit den ersetzte Zeichen "===" und "!==" in Version 2.05 >>> Timeouts beim Ausführen des Scriptes, lange Ladezeiten
 
 
 // Debuglevel
@@ -27,11 +29,11 @@ let debuglevel = 0;
 let liga = "BW U16";
 let url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L";
 let param = args.widgetParameter;
-if (param == 'BW U12') {
+if (param === 'BW U12') {
   liga = "BW U12";
   url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L";
 }
-if (param == 'BW U14') {
+if (param === 'BW U14') {
   liga = "BW U14";
   url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L";
 }
@@ -56,7 +58,7 @@ let html = await wv.evaluateJavaScript(`
   )
 `, true);
 
-// 🔥 NEU: richtige Tabelle finden (nicht einfach die erste!)
+// Richtige Tabelle finden (nicht einfach die erste)
 let startSearch = html.indexOf('<td align="center">1<');
 
 if (startSearch !== -1) {
@@ -114,7 +116,7 @@ for (let i=1; i<max+1; i++ ) {
   //Heimmannschaft
   // Manchmal gibt es vor der Heimmannschaft ein Bild in der Quelle, welches übersprungen werden muss
   let test1 = html.substring(endedatum+48,endedatum+51).trim();
-  if (test1 == "div") {
+  if (test1 === "div") {
     let startb = html.indexOf("</div></td>",endedatum+18);
     endem1 = html.indexOf("</td>",startb+15);
     dsvdatenarray[i][3] = html.substring(startb+15,endem1).trim();
@@ -126,7 +128,7 @@ for (let i=1; i<max+1; i++ ) {
   // Manchmal gibt es vor der Gastmannschaft ein Bild in der Quelle, welches übersprungen werden muss
   let endem2 = html.indexOf("</td>",endem1+38);
   let test2 = html.substring(endem1+30,endem1+33).trim();  
-  if (test2 == "div") {
+  if (test2 === "div") {
     let startc = html.indexOf("</div></td>",endem1+33);
     endem2 = html.indexOf("</td>",startc+15);
     dsvdatenarray[i][4] = html.substring(startc+15,endem2).trim();
@@ -173,7 +175,7 @@ let textfarbe = Color.dynamic(
 // Ermittlung nächstes Spiel mit konfigurierter Mannschaft
 let naechstesspiel = 0;
 for (let i=1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
+  if ((dsvdatenarray[i][6] === "mehr...") && ((dsvdatenarray[i][3] === mannschaft)||(dsvdatenarray[i][4] === mannschaft))) {
     naechstesspiel = i
     break;
   }
@@ -182,7 +184,7 @@ for (let i=1; i<max+1; i++ ) {
 // Ermittlung übernächstes Spiel mit konfigurierter Mannschaft
 let uebernaechstesspiel = 0;
 for (let i=naechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
+  if ((dsvdatenarray[i][6] === "mehr...") && ((dsvdatenarray[i][3] === mannschaft)||(dsvdatenarray[i][4] === mannschaft))) {
     uebernaechstesspiel = i
     break;
   }
@@ -191,7 +193,7 @@ for (let i=naechstesspiel+1; i<max+1; i++ ) {
 // Ermittlung überübernächstes Spiel mit konfigurierter Mannschaft
 let ueberuebernaechstesspiel = 0;
 for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] == "mehr...") && ((dsvdatenarray[i][3] == mannschaft)||(dsvdatenarray[i][4] == mannschaft))) {
+  if ((dsvdatenarray[i][6] === "mehr...") && ((dsvdatenarray[i][3] === mannschaft)||(dsvdatenarray[i][4] === mannschaft))) {
     ueberuebernaechstesspiel = i
     break;
   }
@@ -201,7 +203,7 @@ for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
 // Ermittlung gespielte Spiele in Liga
 let gespieltespiele = 0;
 for (let i=1; i<max+1; i++ ) {
-  if (dsvdatenarray[i][6] != "mehr...") {
+  if (dsvdatenarray[i][6] !== "mehr...") {
     gespieltespiele = gespieltespiele + 1;
   }
 }
@@ -226,7 +228,7 @@ titel.font = titelschriftart;
 titel.textColor=textfarbe;
 
 // Fortschritt Liga in Titel
-let fortschrittliga = titelspalte1stack.addText(`(${gespieltespiele} von ${max} Spielen absolviert)`);
+let fortschrittliga = titelspalte1stack.addText(`(${gespieltespiele} von ${max} Spielen der Saison absolviert)`);
 fortschrittliga.font = textschriftart;
 fortschrittliga.textColor=textfarbe;
 
@@ -283,7 +285,7 @@ function anzahlspielegesamt(html) {
   for (let i=0; i<100; i++ ) {
     let suchstring = "<td align=\"center\">" + i + "<";
     let test = html.includes(suchstring);
-    if (test == true) {
+    if (test === true) {
       max = max + 1;
     }
   } 
@@ -307,16 +309,16 @@ function datumsumrechnung(string) {
 // Funktion Ausgabe von Spieldaten
 function spielausgabe(nr) {
   let textnaechstesspiel = "FEHLER"
-  if (nr != 0) {
+  if (nr !== 0) {
     text1 = widget.addText(" ▶︎ " + dsvdatenarray[nr][3] + " - " + dsvdatenarray[nr][4]);
     text1.font = textschriftart;  
     text1.textColor=textfarbe;
     text2 = widget.addText("     " + dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5]);
     text2.font = textkursivschriftart;
     text2.textColor=textfarbe;
-    // roter text wenn Datum in den nächsten 4 Tagen ist
+    // roter text wenn Datum in den nächsten 7 Tagen ist
     let zeitraum = (Math.floor(datumsumrechnung(dsvdatenarray[nr][1]).getTime() - heute.getTime())/(1000*60*60*24));
-    if (zeitraum <= 4){
+    if (zeitraum <= 7){
       text2.textColor=Color.red();
     }
   }
