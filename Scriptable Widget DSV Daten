@@ -4,18 +4,20 @@
 
 
 // Version
-const version = "2.05";
-// 26.04.2026
+const version = "2.06";
+// 27.04.2026
 
 
 // ToDo / Bugs / Ideen:
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
 // - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT möglich über separate Caches, aber viele Codeänderungen notwendig
 // - evtl. Performance-Probleme mit den ersetzte Zeichen "===" und "!==" in Version 2.05 >>> Timeouts beim Ausführen des Scriptes, lange Ladezeiten
+// - Korrekte Ermittlung der nächsten drei Spiele für Mannschaft
+// - "(noch XX Tage)" bis nächstes Spiel
 
 
 // Debuglevel
-let debuglevel = 0;
+let debuglevel = 1;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 
@@ -160,10 +162,10 @@ for (let i=1; i<max+1; i++ ) {
 
 
 // Definition Schriftarten
-let titelschriftart = Font.boldSystemFont(12);
-let textschriftart = Font.regularSystemFont(11);
-let textkursivschriftart = Font.italicSystemFont(10);
-let textschriftartfett = Font.boldSystemFont(10);
+let titelschriftart = Font.boldSystemFont(11);
+let textschriftart = Font.regularSystemFont(9);
+let textkursivschriftart = Font.italicSystemFont(9);
+let textschriftartfett = Font.boldSystemFont(9);
 let sehrkleinschriftart = Font.regularSystemFont(7);
 let farbefooter = Color.darkGray();
 let textfarbe = Color.dynamic(
@@ -200,6 +202,17 @@ for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
 }
 
 
+// Ermittlung nächstes Spiel Liga
+let naechstesspielliga = 0;
+let datumnaechstesspielliga = new Date(9999,01,01);
+ for (let i=1; i<max+1; i++ ) {
+  if ((dsvdatenarray[i][6] === "mehr...") && (datumsumrechnung(dsvdatenarray[i][1]) < datumnaechstesspielliga)) {
+    naechstesspielliga = i;
+    datumnaechstesspielliga = datumsumrechnung(dsvdatenarray[i][1]);
+  }
+}
+
+
 // Ermittlung gespielte Spiele in Liga
 let gespieltespiele = 0;
 for (let i=1; i<max+1; i++ ) {
@@ -216,7 +229,7 @@ let titelspalte2stack = titelstack.addStack();
 titelspalte2stack.layoutVertically();
 let ballsymbol = SFSymbol.named('volleyball.fill');
 let ballsymbolbild = titelspalte2stack.addImage(ballsymbol.image);
-ballsymbolbild.imageSize = new Size(30, 30);
+ballsymbolbild.imageSize = new Size(25, 25);
 ballsymbolbild.tintColor = textfarbe;
 titelstack.addSpacer(10);
 
@@ -250,7 +263,11 @@ if (debuglevel > 0) {
   console.log("Anzahl Spiele gesamt: " + max.toString());
 }
 
-widget.addSpacer();
+let ueberschrift2 = widget.addText(`Nächstes Spiel Liga:`);
+ueberschrift2.font = textschriftartfett;
+ueberschrift2.textColor=textfarbe;
+
+spielausgabe(naechstesspielliga);
 
 // Ausgabe Version und Uhrzeit
 footer = widget.addStack();
