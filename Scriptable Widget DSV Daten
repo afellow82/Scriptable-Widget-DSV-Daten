@@ -23,6 +23,7 @@ let debuglevel = 0;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 
+
 // Konfiguration Liga / Internetseite (als Parameter) und Mannschaft
 // kein Parameter "BW U16" (Standardwert)
 // Parameter "BW U12"
@@ -94,7 +95,6 @@ let max = anzahlspielegesamt(html);
 // #5 - Spielort
 // #6 - Ergebnis
 const dsvdatenarray = [];
-
 
 // dsvdatenarray initialisieren
 for (let i=1; i < max+1; i++ ) {
