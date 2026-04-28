@@ -1,23 +1,24 @@
 // Widget "DSV Daten"
 // Jens Hamann (j_hamann@gmx.net)
 // Datenabfrage von Reddit-Benutzer nolan17377
+// Sortierfunktion und Optimierungen von ChatGPT
 
 
 // Version
-const version = "2.06ChatGPT";
+const version = "2.07";
 // 28.04.2026
 
 
 // ToDo / Bugs / Ideen:
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
 // - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT möglich über separate Caches, aber viele Codeänderungen notwendig
-// - evtl. Performance-Probleme mit den ersetzte Zeichen "===" und "!==" in Version 2.05 >>> Timeouts beim Ausführen des Scriptes, lange Ladezeiten
-// - Korrekte Ermittlung der nächsten drei Spiele für Mannschaft
+// - evtl. Performance-Probleme mit den ersetzte Zeichen "===" und "!==" in Version 2.05 >>> Timeouts beim Ausführen des Scriptes, lange Ladezeiten (könnte auch andere Gründe haben)
 // - "(noch XX Tage)" bis nächstes Spiel
+// - verbleibende Spiele für Mannschaft
 
 
 // Debuglevel
-let debuglevel = 1;
+let debuglevel = 0;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 
@@ -191,30 +192,24 @@ let textfarbe = Color.dynamic(
 )
 
 
-// Ermittlung nächstes Spiel mit konfigurierter Mannschaft
+// Ermittlung nächstes, übernächstes und überübernächstes Spiel mit konfigurierter Mannschaft
 let naechstesspiel = 0;
-for (let i=1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] === "mehr...") && ((dsvdatenarray[i][3] === mannschaft)||(dsvdatenarray[i][4] === mannschaft))) {
-    naechstesspiel = i
-    break;
-  }
-}
-
-// Ermittlung übernächstes Spiel mit konfigurierter Mannschaft
 let uebernaechstesspiel = 0;
-for (let i=naechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] === "mehr...") && ((dsvdatenarray[i][3] === mannschaft)||(dsvdatenarray[i][4] === mannschaft))) {
-    uebernaechstesspiel = i
-    break;
-  }
-}
-
-// Ermittlung überübernächstes Spiel mit konfigurierter Mannschaft
 let ueberuebernaechstesspiel = 0;
-for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] === "mehr...") && ((dsvdatenarray[i][3] === mannschaft)||(dsvdatenarray[i][4] === mannschaft))) {
-    ueberuebernaechstesspiel = i
-    break;
+
+let count = 0;
+
+for (let i = 1; i < max + 1; i++) {
+  let eintrag = dsvdatenarray[i];
+
+  if (eintrag[6] === "mehr..." && (eintrag[3] === mannschaft || eintrag[4] === mannschaft)) {
+    count++;
+    if (count === 1) naechstesspiel = i;
+    else if (count === 2) uebernaechstesspiel = i;
+    else if (count === 3) {
+      ueberuebernaechstesspiel = i;
+      break;
+    }
   }
 }
 
@@ -227,9 +222,6 @@ for (let i = 1; i < max + 1; i++) {
     break;
   }
 }
-if (debuglevel > 0) {
-  console.log("Nächstes Spiel Liga: " + naechstesspielliga);
-} 
 
 
 // Ermittlung gespielte Spiele in Liga
@@ -276,9 +268,10 @@ spielausgabe(ueberuebernaechstesspiel);
 
 if (debuglevel > 0) {         
   console.log("-----------------");
-  console.log("Nächstes Spiel: " + naechstesspiel);
-  console.log("Übernächstes Spiel: " + uebernaechstesspiel);
-  console.log("Überübernächstes Spiel: " + ueberuebernaechstesspiel);
+  console.log("Nächstes Spiel Liga: " + naechstesspielliga);
+  console.log("Nächstes Spiel Mannschaft: " + naechstesspiel);
+  console.log("Übernächstes Spiel Mannschaft: " + uebernaechstesspiel);
+  console.log("Überübernächstes Spiel Mannschaft: " + ueberuebernaechstesspiel);
   console.log("Anzahl Spiele gesamt: " + max.toString());
 }
 
