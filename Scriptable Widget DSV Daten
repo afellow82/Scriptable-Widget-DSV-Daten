@@ -5,7 +5,7 @@
 
 
 // Version
-const version = "2.07";
+const version = "2.08";
 // 28.04.2026
 
 
@@ -14,7 +14,6 @@ const version = "2.07";
 // - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT möglich über separate Caches, aber viele Codeänderungen notwendig
 // - evtl. Performance-Probleme mit den ersetzte Zeichen "===" und "!==" in Version 2.05 >>> Timeouts beim Ausführen des Scriptes, lange Ladezeiten (könnte auch andere Gründe haben)
 // - "(noch XX Tage)" bis nächstes Spiel
-// - verbleibende Spiele für Mannschaft
 
 
 // Debuglevel
@@ -214,6 +213,16 @@ for (let i = 1; i < max + 1; i++) {
 }
 
 
+// Ermittlung ausstehende Spiele Mannschaft
+let ausstehendespielemannschaft = 0;
+for (let i = 1; i < max + 1; i++) {
+  let eintrag = dsvdatenarray[i];
+  if (eintrag[6] === "mehr..." && (eintrag[3] === mannschaft || eintrag[4] === mannschaft)) {
+    ausstehendespielemannschaft++;
+  }
+}
+
+
 // Ermittlung nächstes Spiel Liga
 let naechstesspielliga = 0;
 for (let i = 1; i < max + 1; i++) {
@@ -258,7 +267,7 @@ fortschrittliga.textColor=textfarbe;
 
 widget.addSpacer();
 
-let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft}:`);
+let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft} (${ausstehendespielemannschaft} Spiele ausstehend):`);
 ueberschrift.font = textschriftartfett;
 ueberschrift.textColor=textfarbe;
 
@@ -273,6 +282,7 @@ if (debuglevel > 0) {
   console.log("Übernächstes Spiel Mannschaft: " + uebernaechstesspiel);
   console.log("Überübernächstes Spiel Mannschaft: " + ueberuebernaechstesspiel);
   console.log("Anzahl Spiele gesamt: " + max.toString());
+  console.log("Ausstehende Spiele Mannschaft: " + ausstehendespielemannschaft);
 }
 
 let ueberschrift2 = widget.addText(`Nächstes Spiel Liga:`);
