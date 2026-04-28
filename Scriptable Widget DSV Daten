@@ -4,8 +4,8 @@
 
 
 // Version
-const version = "2.06";
-// 27.04.2026
+const version = "2.06ChatGPT";
+// 28.04.2026
 
 
 // ToDo / Bugs / Ideen:
@@ -146,7 +146,7 @@ for (let i=1; i<max+1; i++ ) {
   let startd = html.indexOf(">",endeo+11);
   let endee = html.indexOf("</a>",startd);
   dsvdatenarray[i][6] = html.substring(startd+1,endee).trim();
-          
+/**          
   if (debuglevel > 0) {         
     console.log("-----------------");
     console.log("dsvdatenarray Nr.: " + i);
@@ -158,7 +158,24 @@ for (let i=1; i<max+1; i++ ) {
     console.log(dsvdatenarray[i][5]);
     console.log(dsvdatenarray[i][6]);
   }
+**/
 }   
+
+sortiereDSVDaten(dsvdatenarray);
+
+for (let i=1; i<max+1; i++ ) {
+  if (debuglevel > 0) {         
+    console.log("-----------------");
+    console.log("dsvdatenarray Nr.: " + i);
+    console.log(dsvdatenarray[i][0]);
+    console.log(dsvdatenarray[i][1]);
+    console.log(dsvdatenarray[i][2]);
+    console.log(dsvdatenarray[i][3]);
+    console.log(dsvdatenarray[i][4]);
+    console.log(dsvdatenarray[i][5]);
+    console.log(dsvdatenarray[i][6]);
+  }
+}
 
 
 // Definition Schriftarten
@@ -204,13 +221,15 @@ for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
 
 // Ermittlung nächstes Spiel Liga
 let naechstesspielliga = 0;
-let datumnaechstesspielliga = new Date(9999,01,01);
- for (let i=1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] === "mehr...") && (datumsumrechnung(dsvdatenarray[i][1]) < datumnaechstesspielliga)) {
+for (let i = 1; i < max + 1; i++) {
+  if (dsvdatenarray[i][6] === "mehr...") {
     naechstesspielliga = i;
-    datumnaechstesspielliga = datumsumrechnung(dsvdatenarray[i][1]);
+    break;
   }
 }
+if (debuglevel > 0) {
+  console.log("Nächstes Spiel Liga: " + naechstesspielliga);
+} 
 
 
 // Ermittlung gespielte Spiele in Liga
@@ -314,11 +333,11 @@ function anzahlspielegesamt(html) {
 function datumsumrechnung(string) {
   let [day, month, year] = string.split(".")
   let datum = new Date(Number(year) + 2000, month - 1, day)
-  if (debuglevel > 0) {
-    console.log("-----------------");
-    console.log("String: " + string);
-    console.log("Datum: " + datum);
-  }
+//  if (debuglevel > 0) {
+//    console.log("-----------------");
+//    console.log("String: " + string);
+//    console.log("Datum: " + datum);
+//  }
   return datum;
 }
 
@@ -339,4 +358,47 @@ function spielausgabe(nr) {
       text2.textColor=Color.red();
     }
   }
+}
+
+// Funktion array sortieren
+function sortiereDSVDaten(array) {
+  let temp = array.slice(1); // 1-basiertes Array berücksichtigen
+
+  function parseDateTime(datumStr, zeitStr) {
+    // Datum parsen
+    let [day, month, year] = datumStr.split(".");
+    let d = Number(day);
+    let m = Number(month) - 1;
+    let y = Number(year) + 2000;
+
+    // Uhrzeit bereinigen (wirklich ALLES raus)
+    let cleanZeit = (zeitStr || "").replace(/\s/g, "");
+
+    let h = 0;
+    let min = 0;
+
+    if (cleanZeit.length >= 5 && cleanZeit.includes(":")) {
+      h = Number(cleanZeit.substring(0, 2));
+      min = Number(cleanZeit.substring(3, 5));
+
+      if (isNaN(h)) h = 0;
+      if (isNaN(min)) min = 0;
+    }
+
+    return new Date(y, m, d, h, min).getTime();
+  }
+
+  temp.sort((a, b) => {
+    let timeA = parseDateTime(a[1], a[2]);
+    let timeB = parseDateTime(b[1], b[2]);
+
+    return timeA - timeB;
+  });
+
+  // zurück ins Originalarray (1-basiert)
+  for (let i = 0; i < temp.length; i++) {
+    array[i + 1] = temp[i];
+  }
+
+  return array;
 }
