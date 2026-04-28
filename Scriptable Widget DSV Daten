@@ -5,7 +5,7 @@
 
 
 // Version
-const version = "3.00";
+const version = "3.01";
 // 28.04.2026
 
 
@@ -191,54 +191,48 @@ let textfarbe = Color.dynamic(
 
 
 // Ermittlung nächstes, übernächstes und überübernächstes Spiel mit konfigurierter Mannschaft
+// Ermittlung ausstehende Spiele Mannschaft
+// Ermittlung nächstes Spiel Liga
+// Ermittlung gespielte Spiele in Liga
 let naechstesspiel = 0;
 let uebernaechstesspiel = 0;
 let ueberuebernaechstesspiel = 0;
+
+let naechstesspielliga = 0;
+let ausstehendespielemannschaft = 0;
+let gespieltespiele = 0;
 
 let count = 0;
 
 for (let i = 1; i < max + 1; i++) {
   let eintrag = dsvdatenarray[i];
 
-  if (eintrag[6] === "mehr..." && (eintrag[3] === mannschaft || eintrag[4] === mannschaft)) {
+  let istOffen = (eintrag[6] === "mehr...");
+  let istMannschaft = (eintrag[3] === mannschaft || eintrag[4] === mannschaft);
+
+  // gespielte Spiele
+  if (!istOffen) {
+    gespieltespiele++;
+  }
+
+  // nächstes Spiel Liga
+  if (istOffen && naechstesspielliga === 0) {
+    naechstesspielliga = i;
+  }
+
+  // Mannschafts-Spiele
+  if (istOffen && istMannschaft) {
+    ausstehendespielemannschaft++;
+
     count++;
     if (count === 1) naechstesspiel = i;
     else if (count === 2) uebernaechstesspiel = i;
     else if (count === 3) {
       ueberuebernaechstesspiel = i;
-      break;
     }
   }
 }
 
-
-// Ermittlung ausstehende Spiele Mannschaft
-let ausstehendespielemannschaft = 0;
-for (let i = 1; i < max + 1; i++) {
-  let eintrag = dsvdatenarray[i];
-  if (eintrag[6] === "mehr..." && (eintrag[3] === mannschaft || eintrag[4] === mannschaft)) {
-    ausstehendespielemannschaft++;
-  }
-}
-
-
-// Ermittlung nächstes Spiel Liga
-let naechstesspielliga = 0;
-for (let i = 1; i < max + 1; i++) {
-  if (dsvdatenarray[i][6] === "mehr...") {
-    naechstesspielliga = i;
-    break;
-  }
-}
-
-
-// Ermittlung gespielte Spiele in Liga
-let gespieltespiele = 0;
-for (let i=1; i<max+1; i++ ) {
-  if (dsvdatenarray[i][6] !== "mehr...") {
-    gespieltespiele = gespieltespiele + 1;
-  }
-}
 
 // Ausgabe
 let titelstack = widget.addStack();
