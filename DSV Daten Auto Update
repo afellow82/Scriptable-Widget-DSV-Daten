@@ -10,17 +10,18 @@ async function main() {
 // Widget "DSV Daten"
 // Jens Hamann (j_hamann@gmx.net)
 // Datenabfrage von Reddit-Benutzer nolan17377
+// Sortierfunktion und Optimierungen von ChatGPT
 
 
 // Version
-const version = "2.05";
-// 26.04.2026
+const version = "3.01";
+// 28.04.2026
 
 
 // ToDo / Bugs / Ideen:
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
-// - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT möglich über separate Caches, aber viele Codeänderungen notwendig
-// - evtl. Performance-Probleme mit den ersetzte Zeichen "===" und "!==" in Version 2.05 >>> Timeouts beim Ausführen des Scriptes, lange Ladezeiten
+// - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT theoretisch möglich über separate Caches, aber viele Codeänderungen notwendig
+// - Umbau der Log-Ausgaben in log() Funktion > weniger Code, sauberer, leichter wartbar
 
 
 // Debuglevel
@@ -153,7 +154,7 @@ for (let i=1; i<max+1; i++ ) {
   let startd = html.indexOf(">",endeo+11);
   let endee = html.indexOf("</a>",startd);
   dsvdatenarray[i][6] = html.substring(startd+1,endee).trim();
-          
+/**          
   if (debuglevel > 0) {         
     console.log("-----------------");
     console.log("dsvdatenarray Nr.: " + i);
@@ -165,14 +166,31 @@ for (let i=1; i<max+1; i++ ) {
     console.log(dsvdatenarray[i][5]);
     console.log(dsvdatenarray[i][6]);
   }
+**/
 }   
+
+sortiereDSVDaten(dsvdatenarray);
+
+for (let i=1; i<max+1; i++ ) {
+  if (debuglevel > 0) {         
+    console.log("-----------------");
+    console.log("dsvdatenarray Nr.: " + i);
+    console.log(dsvdatenarray[i][0]);
+    console.log(dsvdatenarray[i][1]);
+    console.log(dsvdatenarray[i][2]);
+    console.log(dsvdatenarray[i][3]);
+    console.log(dsvdatenarray[i][4]);
+    console.log(dsvdatenarray[i][5]);
+    console.log(dsvdatenarray[i][6]);
+  }
+}
 
 
 // Definition Schriftarten
-let titelschriftart = Font.boldSystemFont(12);
-let textschriftart = Font.regularSystemFont(11);
-let textkursivschriftart = Font.italicSystemFont(10);
-let textschriftartfett = Font.boldSystemFont(10);
+let titelschriftart = Font.boldSystemFont(11);
+let textschriftart = Font.regularSystemFont(9);
+let textkursivschriftart = Font.italicSystemFont(9);
+let textschriftartfett = Font.boldSystemFont(9);
 let sehrkleinschriftart = Font.regularSystemFont(7);
 let farbefooter = Color.darkGray();
 let textfarbe = Color.dynamic(
@@ -181,41 +199,49 @@ let textfarbe = Color.dynamic(
 )
 
 
-// Ermittlung nächstes Spiel mit konfigurierter Mannschaft
-let naechstesspiel = 0;
-for (let i=1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] === "mehr...") && ((dsvdatenarray[i][3] === mannschaft)||(dsvdatenarray[i][4] === mannschaft))) {
-    naechstesspiel = i
-    break;
-  }
-}
-
-// Ermittlung übernächstes Spiel mit konfigurierter Mannschaft
-let uebernaechstesspiel = 0;
-for (let i=naechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] === "mehr...") && ((dsvdatenarray[i][3] === mannschaft)||(dsvdatenarray[i][4] === mannschaft))) {
-    uebernaechstesspiel = i
-    break;
-  }
-}
-
-// Ermittlung überübernächstes Spiel mit konfigurierter Mannschaft
-let ueberuebernaechstesspiel = 0;
-for (let i=uebernaechstesspiel+1; i<max+1; i++ ) {
-  if ((dsvdatenarray[i][6] === "mehr...") && ((dsvdatenarray[i][3] === mannschaft)||(dsvdatenarray[i][4] === mannschaft))) {
-    ueberuebernaechstesspiel = i
-    break;
-  }
-}
-
-
+// Ermittlung nächstes, übernächstes und überübernächstes Spiel mit konfigurierter Mannschaft
+// Ermittlung ausstehende Spiele Mannschaft
+// Ermittlung nächstes Spiel Liga
 // Ermittlung gespielte Spiele in Liga
+let naechstesspiel = 0;
+let uebernaechstesspiel = 0;
+let ueberuebernaechstesspiel = 0;
+
+let naechstesspielliga = 0;
+let ausstehendespielemannschaft = 0;
 let gespieltespiele = 0;
-for (let i=1; i<max+1; i++ ) {
-  if (dsvdatenarray[i][6] !== "mehr...") {
-    gespieltespiele = gespieltespiele + 1;
+
+let count = 0;
+
+for (let i = 1; i < max + 1; i++) {
+  let eintrag = dsvdatenarray[i];
+
+  let istOffen = (eintrag[6] === "mehr...");
+  let istMannschaft = (eintrag[3] === mannschaft || eintrag[4] === mannschaft);
+
+  // gespielte Spiele
+  if (!istOffen) {
+    gespieltespiele++;
+  }
+
+  // nächstes Spiel Liga
+  if (istOffen && naechstesspielliga === 0) {
+    naechstesspielliga = i;
+  }
+
+  // Mannschafts-Spiele
+  if (istOffen && istMannschaft) {
+    ausstehendespielemannschaft++;
+
+    count++;
+    if (count === 1) naechstesspiel = i;
+    else if (count === 2) uebernaechstesspiel = i;
+    else if (count === 3) {
+      ueberuebernaechstesspiel = i;
+    }
   }
 }
+
 
 // Ausgabe
 let titelstack = widget.addStack();
@@ -225,7 +251,7 @@ let titelspalte2stack = titelstack.addStack();
 titelspalte2stack.layoutVertically();
 let ballsymbol = SFSymbol.named('volleyball.fill');
 let ballsymbolbild = titelspalte2stack.addImage(ballsymbol.image);
-ballsymbolbild.imageSize = new Size(30, 30);
+ballsymbolbild.imageSize = new Size(25, 25);
 ballsymbolbild.tintColor = textfarbe;
 titelstack.addSpacer(10);
 
@@ -243,7 +269,7 @@ fortschrittliga.textColor=textfarbe;
 
 widget.addSpacer();
 
-let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft}:`);
+let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft} (${ausstehendespielemannschaft} Spiele ausstehend):`);
 ueberschrift.font = textschriftartfett;
 ueberschrift.textColor=textfarbe;
 
@@ -253,13 +279,19 @@ spielausgabe(ueberuebernaechstesspiel);
 
 if (debuglevel > 0) {         
   console.log("-----------------");
-  console.log("Nächstes Spiel: " + naechstesspiel);
-  console.log("Übernächstes Spiel: " + uebernaechstesspiel);
-  console.log("Überübernächstes Spiel: " + ueberuebernaechstesspiel);
+  console.log("Nächstes Spiel Liga: " + naechstesspielliga);
+  console.log("Nächstes Spiel Mannschaft: " + naechstesspiel);
+  console.log("Übernächstes Spiel Mannschaft: " + uebernaechstesspiel);
+  console.log("Überübernächstes Spiel Mannschaft: " + ueberuebernaechstesspiel);
   console.log("Anzahl Spiele gesamt: " + max.toString());
+  console.log("Ausstehende Spiele Mannschaft: " + ausstehendespielemannschaft);
 }
 
-widget.addSpacer();
+let ueberschrift2 = widget.addText(`Nächstes Spiel Liga:`);
+ueberschrift2.font = textschriftartfett;
+ueberschrift2.textColor=textfarbe;
+
+spielausgabe(naechstesspielliga);
 
 // Ausgabe Version und Uhrzeit
 footer = widget.addStack();
@@ -290,15 +322,7 @@ Script.complete();
 
 // Funktion Ermittlung Gesamtanzahl der Spiele
 function anzahlspielegesamt(html) {
-  let max = 0;
-  for (let i=0; i<100; i++ ) {
-    let suchstring = "<td align=\"center\">" + i + "<";
-    let test = html.includes(suchstring);
-    if (test === true) {
-      max = max + 1;
-    }
-  } 
-  return max;
+  return (html.match(/<td align="center">\d+</g) || []).length;
 }
 
 
@@ -306,23 +330,55 @@ function anzahlspielegesamt(html) {
 function datumsumrechnung(string) {
   let [day, month, year] = string.split(".")
   let datum = new Date(Number(year) + 2000, month - 1, day)
-  if (debuglevel > 0) {
-    console.log("-----------------");
-    console.log("String: " + string);
-    console.log("Datum: " + datum);
-  }
+//  if (debuglevel > 0) {
+//    console.log("-----------------");
+//    console.log("String: " + string);
+//    console.log("Datum: " + datum);
+//  }
   return datum;
+}
+
+
+// Funktion Ermittlung Tage bis Spiel
+function tageBisSpiel(eintrag) {
+  if (!eintrag || !eintrag[1]) return null;
+
+  // Datum aus String holen
+  let zielDatum = datumsumrechnung(eintrag[1]);
+
+  // Heute auf 00:00 setzen
+  let heute = new Date();
+  heute.setHours(0, 0, 0, 0);
+
+  // Ziel-Datum auf 00:00 setzen
+  zielDatum.setHours(0, 0, 0, 0);
+
+  // Differenz in Tagen berechnen
+  let diff = zielDatum.getTime() - heute.getTime();
+  let tage = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+  return tage;
+}
+
+
+// Tage schön ausgeben
+function tageText(tage) {
+  if (tage === 0) return "(heute)";
+  if (tage === 1) return "(morgen)";
+  if (tage < 0) return "(vorbei)";
+  return "(noch " + tage + " Tage)";
 }
 
 
 // Funktion Ausgabe von Spieldaten
 function spielausgabe(nr) {
-  let textnaechstesspiel = "FEHLER"
+  let textnaechstesspiel = "FEHLER";
   if (nr !== 0) {
+    let tage = tageBisSpiel(dsvdatenarray[nr]);
     text1 = widget.addText(" ▶︎ " + dsvdatenarray[nr][3] + " - " + dsvdatenarray[nr][4]);
     text1.font = textschriftart;  
     text1.textColor=textfarbe;
-    text2 = widget.addText("     " + dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5]);
+    text2 = widget.addText("     " + dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5] + " " + tageText(tage));
     text2.font = textkursivschriftart;
     text2.textColor=textfarbe;
     // roter text wenn Datum in den nächsten 7 Tagen ist
@@ -333,6 +389,48 @@ function spielausgabe(nr) {
   }
 }
 
+// Funktion array sortieren
+function sortiereDSVDaten(array) {
+  let temp = array.slice(1); // 1-basiertes Array berücksichtigen
+
+  function parseDateTime(datumStr, zeitStr) {
+    // Datum parsen
+    let [day, month, year] = datumStr.split(".");
+    let d = Number(day);
+    let m = Number(month) - 1;
+    let y = Number(year) + 2000;
+
+    // Uhrzeit bereinigen (wirklich ALLES raus)
+    let cleanZeit = (zeitStr || "").replace(/\s/g, "");
+
+    let h = 0;
+    let min = 0;
+
+    if (cleanZeit.length >= 5 && cleanZeit.includes(":")) {
+      h = Number(cleanZeit.substring(0, 2));
+      min = Number(cleanZeit.substring(3, 5));
+
+      if (isNaN(h)) h = 0;
+      if (isNaN(min)) min = 0;
+    }
+
+    return new Date(y, m, d, h, min).getTime();
+  }
+
+  temp.sort((a, b) => {
+    let timeA = parseDateTime(a[1], a[2]);
+    let timeB = parseDateTime(b[1], b[2]);
+
+    return timeA - timeB;
+  });
+
+  // zurück ins Originalarray (1-basiert)
+  for (let i = 0; i < temp.length; i++) {
+    array[i + 1] = temp[i];
+  }
+
+  return array;
+}
 
     
 
