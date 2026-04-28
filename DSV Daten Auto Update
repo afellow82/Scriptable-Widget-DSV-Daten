@@ -14,20 +14,24 @@ async function main() {
 
 
 // Version
-const version = "3.01";
+const version = "3.02";
 // 28.04.2026
 
 
 // ToDo / Bugs / Ideen:
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
 // - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT theoretisch möglich über separate Caches, aber viele Codeänderungen notwendig
-// - Umbau der Log-Ausgaben in log() Funktion > weniger Code, sauberer, leichter wartbar
+// - Professioneller: Umbau der Log-Ausgaben in log() Funktion > weniger Code, sauberer, leichter wartbar
+// - matchAll() statt indexOf verwenden:
+//   - const rows = [...html.matchAll(/<td align="center">(\d+)<[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<a[^>]*>(.*?)<\/a>/g)];
+//   - sehr großer Geschwindikeitsgewinn
 
 
 // Debuglevel
 let debuglevel = 0;
 // 0 - keine Analyse
 // 1 - Analyse Werte
+
 
 // Konfiguration Liga / Internetseite (als Parameter) und Mannschaft
 // kein Parameter "BW U16" (Standardwert)
@@ -100,6 +104,7 @@ let max = anzahlspielegesamt(html);
 // #5 - Spielort
 // #6 - Ergebnis
 const dsvdatenarray = [];
+
 // dsvdatenarray initialisieren
 for (let i=1; i < max+1; i++ ) {
   dsvdatenarray[i] = ["0","01.01.01","00:00","Heimmannschaft","Gastmannschaft","Spielort","X:X"];
@@ -431,7 +436,6 @@ function sortiereDSVDaten(array) {
 
   return array;
 }
-
     
 
 
