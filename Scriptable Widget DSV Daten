@@ -5,15 +5,14 @@
 
 
 // Version
-const version = "2.08";
+const version = "3.00";
 // 28.04.2026
 
 
 // ToDo / Bugs / Ideen:
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
-// - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT möglich über separate Caches, aber viele Codeänderungen notwendig
-// - evtl. Performance-Probleme mit den ersetzte Zeichen "===" und "!==" in Version 2.05 >>> Timeouts beim Ausführen des Scriptes, lange Ladezeiten (könnte auch andere Gründe haben)
-// - "(noch XX Tage)" bis nächstes Spiel
+// - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT theoretisch möglich über separate Caches, aber viele Codeänderungen notwendig
+// - Umbau der Log-Ausgaben in log() Funktion > weniger Code, sauberer, leichter wartbar
 
 
 // Debuglevel
@@ -320,15 +319,7 @@ Script.complete();
 
 // Funktion Ermittlung Gesamtanzahl der Spiele
 function anzahlspielegesamt(html) {
-  let max = 0;
-  for (let i=0; i<100; i++ ) {
-    let suchstring = "<td align=\"center\">" + i + "<";
-    let test = html.includes(suchstring);
-    if (test === true) {
-      max = max + 1;
-    }
-  } 
-  return max;
+  return (html.match(/<td align="center">\d+</g) || []).length;
 }
 
 
@@ -345,14 +336,46 @@ function datumsumrechnung(string) {
 }
 
 
+// Funktion Ermittlung Tage bis Spiel
+function tageBisSpiel(eintrag) {
+  if (!eintrag || !eintrag[1]) return null;
+
+  // Datum aus String holen
+  let zielDatum = datumsumrechnung(eintrag[1]);
+
+  // Heute auf 00:00 setzen
+  let heute = new Date();
+  heute.setHours(0, 0, 0, 0);
+
+  // Ziel-Datum auf 00:00 setzen
+  zielDatum.setHours(0, 0, 0, 0);
+
+  // Differenz in Tagen berechnen
+  let diff = zielDatum.getTime() - heute.getTime();
+  let tage = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+  return tage;
+}
+
+
+// Tage schön ausgeben
+function tageText(tage) {
+  if (tage === 0) return "(heute)";
+  if (tage === 1) return "(morgen)";
+  if (tage < 0) return "(vorbei)";
+  return "(noch " + tage + " Tage)";
+}
+
+
 // Funktion Ausgabe von Spieldaten
 function spielausgabe(nr) {
-  let textnaechstesspiel = "FEHLER"
+  let textnaechstesspiel = "FEHLER";
   if (nr !== 0) {
+    let tage = tageBisSpiel(dsvdatenarray[nr]);
     text1 = widget.addText(" ▶︎ " + dsvdatenarray[nr][3] + " - " + dsvdatenarray[nr][4]);
     text1.font = textschriftart;  
     text1.textColor=textfarbe;
-    text2 = widget.addText("     " + dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5]);
+    text2 = widget.addText("     " + dsvdatenarray[nr][1] + " " + dsvdatenarray[nr][2] + " in " + dsvdatenarray[nr][5] + " " + tageText(tage));
     text2.font = textkursivschriftart;
     text2.textColor=textfarbe;
     // roter text wenn Datum in den nächsten 7 Tagen ist
