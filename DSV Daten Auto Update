@@ -14,8 +14,8 @@ async function main() {
 
 
 // Version
-const version = "3.02";
-// 28.04.2026
+const version = "3.03";
+// 29.04.2026
 
 
 // ToDo / Bugs / Ideen:
@@ -192,10 +192,10 @@ for (let i=1; i<max+1; i++ ) {
 
 
 // Definition Schriftarten
-let titelschriftart = Font.boldSystemFont(11);
-let textschriftart = Font.regularSystemFont(9);
-let textkursivschriftart = Font.italicSystemFont(9);
-let textschriftartfett = Font.boldSystemFont(9);
+let titelschriftart = Font.boldSystemFont(13);
+let textschriftart = Font.regularSystemFont(10);
+let textkursivschriftart = Font.italicSystemFont(10);
+let textschriftartfett = Font.boldSystemFont(10);
 let sehrkleinschriftart = Font.regularSystemFont(7);
 let farbefooter = Color.darkGray();
 let textfarbe = Color.dynamic(
@@ -210,7 +210,6 @@ let textfarbe = Color.dynamic(
 // Ermittlung gespielte Spiele in Liga
 let naechstesspiel = 0;
 let uebernaechstesspiel = 0;
-let ueberuebernaechstesspiel = 0;
 
 let naechstesspielliga = 0;
 let ausstehendespielemannschaft = 0;
@@ -241,9 +240,6 @@ for (let i = 1; i < max + 1; i++) {
     count++;
     if (count === 1) naechstesspiel = i;
     else if (count === 2) uebernaechstesspiel = i;
-    else if (count === 3) {
-      ueberuebernaechstesspiel = i;
-    }
   }
 }
 
@@ -256,7 +252,7 @@ let titelspalte2stack = titelstack.addStack();
 titelspalte2stack.layoutVertically();
 let ballsymbol = SFSymbol.named('volleyball.fill');
 let ballsymbolbild = titelspalte2stack.addImage(ballsymbol.image);
-ballsymbolbild.imageSize = new Size(25, 25);
+ballsymbolbild.imageSize = new Size(30, 30);
 ballsymbolbild.tintColor = textfarbe;
 titelstack.addSpacer(10);
 
@@ -280,14 +276,13 @@ ueberschrift.textColor=textfarbe;
 
 spielausgabe(naechstesspiel);
 spielausgabe(uebernaechstesspiel);
-spielausgabe(ueberuebernaechstesspiel);
 
 if (debuglevel > 0) {         
   console.log("-----------------");
   console.log("Nächstes Spiel Liga: " + naechstesspielliga);
   console.log("Nächstes Spiel Mannschaft: " + naechstesspiel);
   console.log("Übernächstes Spiel Mannschaft: " + uebernaechstesspiel);
-  console.log("Überübernächstes Spiel Mannschaft: " + ueberuebernaechstesspiel);
+  //console.log("Überübernächstes Spiel Mannschaft: " + ueberuebernaechstesspiel);
   console.log("Anzahl Spiele gesamt: " + max.toString());
   console.log("Ausstehende Spiele Mannschaft: " + ausstehendespielemannschaft);
 }
