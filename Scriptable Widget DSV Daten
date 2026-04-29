@@ -2,7 +2,6 @@
 // Jens Hamann (j_hamann@gmx.net)
 // Datenabfrage von Reddit-Benutzer nolan17377
 // Sortierfunktion und Optimierungen von ChatGPT
-// nur zwei Spiele von Mannschaft, dafür aber größere Schriften
 
 
 // Version
@@ -202,7 +201,6 @@ let textfarbe = Color.dynamic(
 // Ermittlung gespielte Spiele in Liga
 let naechstesspiel = 0;
 let uebernaechstesspiel = 0;
-//let ueberuebernaechstesspiel = 0;
 
 let naechstesspielliga = 0;
 let ausstehendespielemannschaft = 0;
@@ -233,9 +231,6 @@ for (let i = 1; i < max + 1; i++) {
     count++;
     if (count === 1) naechstesspiel = i;
     else if (count === 2) uebernaechstesspiel = i;
-    //else if (count === 3) {
-    //  ueberuebernaechstesspiel = i;
-    //}
   }
 }
 
@@ -272,7 +267,6 @@ ueberschrift.textColor=textfarbe;
 
 spielausgabe(naechstesspiel);
 spielausgabe(uebernaechstesspiel);
-//spielausgabe(ueberuebernaechstesspiel);
 
 if (debuglevel > 0) {         
   console.log("-----------------");
