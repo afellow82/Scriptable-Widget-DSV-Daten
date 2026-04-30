@@ -5,8 +5,8 @@
 
 
 // Version
-const version = "3.03";
-// 29.04.2026
+const version = "3.04";
+// 30.04.2026
 
 
 // ToDo / Bugs / Ideen:
@@ -16,6 +16,10 @@ const version = "3.03";
 // - matchAll() statt indexOf verwenden:
 //   - const rows = [...html.matchAll(/<td align="center">(\d+)<[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<a[^>]*>(.*?)<\/a>/g)];
 //   - sehr großer Geschwindikeitsgewinn
+// - Cache für html einbauen und nur abrufen, wenn Daten älter als eine Stunde sind, unten Zeit der Datenabholung anzeigen
+
+
+const startTime = Date.now();
 
 
 // Debuglevel
@@ -183,7 +187,7 @@ for (let i=1; i<max+1; i++ ) {
 
 
 // Definition Schriftarten
-let titelschriftart = Font.boldSystemFont(13);
+let titelschriftart = Font.boldSystemFont(14);
 let textschriftart = Font.regularSystemFont(10);
 let textkursivschriftart = Font.italicSystemFont(10);
 let textschriftartfett = Font.boldSystemFont(10);
@@ -243,7 +247,7 @@ let titelspalte2stack = titelstack.addStack();
 titelspalte2stack.layoutVertically();
 let ballsymbol = SFSymbol.named('volleyball.fill');
 let ballsymbolbild = titelspalte2stack.addImage(ballsymbol.image);
-ballsymbolbild.imageSize = new Size(30, 30);
+ballsymbolbild.imageSize = new Size(28, 28);
 ballsymbolbild.tintColor = textfarbe;
 titelstack.addSpacer(10);
 
@@ -297,7 +301,10 @@ if (minutenaktuell < 10) {minutenaktuelltext = '0'+ minutenaktuell;}
 
 footer.addSpacer();
 
-versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +']  ';
+const endTime = Date.now();
+const ladezeit = ((endTime - startTime)/1000).toFixed(1).replace('.', ',');
+
+versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +', ' + ladezeit + ' s]  ';
 let textzeileversion = footer.addText(versiontext);
 textzeileversion.font=sehrkleinschriftart;
 textzeileversion.textColor=farbefooter;
