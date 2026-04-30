@@ -5,33 +5,29 @@
 
 
 // Version
-const version = "3.04";
+const version = "3.05";
 // 30.04.2026
 
 
 // ToDo / Bugs / Ideen:
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
 // - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT theoretisch möglich über separate Caches, aber viele Codeänderungen notwendig
-// - Professioneller: Umbau der Log-Ausgaben in log() Funktion > weniger Code, sauberer, leichter wartbar
 // - matchAll() statt indexOf verwenden:
 //   - const rows = [...html.matchAll(/<td align="center">(\d+)<[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<a[^>]*>(.*?)<\/a>/g)];
 //   - sehr großer Geschwindikeitsgewinn
-// - Cache für html einbauen und nur abrufen, wenn Daten älter als eine Stunde sind, unten Zeit der Datenabholung anzeigen
 
 
 const startTime = Date.now();
 
 
 // Debuglevel
-let debuglevel = 0;
+let debuglevel = 1;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 
 
 // Konfiguration Liga / Internetseite (als Parameter) und Mannschaft
-// kein Parameter "BW U16" (Standardwert)
-// Parameter "BW U12"
-// Parameter "BW U14"
+// Mögliche Parameter: <keiner> ("BW U16", Standardwert), "BW U12", "BW U14"
 // Webseite U16: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L
 // Webseite U12: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L
 // Webseite U14: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L
@@ -79,8 +75,9 @@ if (startSearch !== -1) {
     html = html.substring(tableStart, tableEnd + 8);
   }
 }
-if (debuglevel > 0) console.log(url);
-if (debuglevel > 0) console.log(html);
+log(url);
+logDivider();
+log(html);
 
 // Widget initialisieren
 let widget = new ListWidget();
@@ -155,34 +152,30 @@ for (let i=1; i<max+1; i++ ) {
   let endee = html.indexOf("</a>",startd);
   dsvdatenarray[i][6] = html.substring(startd+1,endee).trim();
 /**          
-  if (debuglevel > 0) {         
-    console.log("-----------------");
-    console.log("dsvdatenarray Nr.: " + i);
-    console.log(dsvdatenarray[i][0]);
-    console.log(dsvdatenarray[i][1]);
-    console.log(dsvdatenarray[i][2]);
-    console.log(dsvdatenarray[i][3]);
-    console.log(dsvdatenarray[i][4]);
-    console.log(dsvdatenarray[i][5]);
-    console.log(dsvdatenarray[i][6]);
-  }
+  logDivider();
+  log("dsvdatenarray Nr.: " + i);
+  log(dsvdatenarray[i][0]);
+  log(dsvdatenarray[i][1]);
+  log(dsvdatenarray[i][2]);
+  log(dsvdatenarray[i][3]);
+  log(dsvdatenarray[i][4]);
+  log(dsvdatenarray[i][5]);
+  log(dsvdatenarray[i][6]);
 **/
 }   
 
 sortiereDSVDaten(dsvdatenarray);
 
 for (let i=1; i<max+1; i++ ) {
-  if (debuglevel > 0) {         
-    console.log("-----------------");
-    console.log("dsvdatenarray Nr.: " + i);
-    console.log(dsvdatenarray[i][0]);
-    console.log(dsvdatenarray[i][1]);
-    console.log(dsvdatenarray[i][2]);
-    console.log(dsvdatenarray[i][3]);
-    console.log(dsvdatenarray[i][4]);
-    console.log(dsvdatenarray[i][5]);
-    console.log(dsvdatenarray[i][6]);
-  }
+  logDivider();
+  log("dsvdatenarray Nr.: " + i);
+  log(dsvdatenarray[i][0]);
+  log(dsvdatenarray[i][1]);
+  log(dsvdatenarray[i][2]);
+  log(dsvdatenarray[i][3]);
+  log(dsvdatenarray[i][4]);
+  log(dsvdatenarray[i][5]);
+  log(dsvdatenarray[i][6]);
 }
 
 
@@ -272,15 +265,12 @@ ueberschrift.textColor=textfarbe;
 spielausgabe(naechstesspiel);
 spielausgabe(uebernaechstesspiel);
 
-if (debuglevel > 0) {         
-  console.log("-----------------");
-  console.log("Nächstes Spiel Liga: " + naechstesspielliga);
-  console.log("Nächstes Spiel Mannschaft: " + naechstesspiel);
-  console.log("Übernächstes Spiel Mannschaft: " + uebernaechstesspiel);
-  //console.log("Überübernächstes Spiel Mannschaft: " + ueberuebernaechstesspiel);
-  console.log("Anzahl Spiele gesamt: " + max.toString());
-  console.log("Ausstehende Spiele Mannschaft: " + ausstehendespielemannschaft);
-}
+logDivider();
+log("Nächstes Spiel Liga: " + naechstesspielliga);
+log("Nächstes Spiel Mannschaft: " + naechstesspiel);
+log("Übernächstes Spiel Mannschaft: " + uebernaechstesspiel);
+log("Anzahl Spiele gesamt: " + max.toString());
+log("Ausstehende Spiele Mannschaft: " + ausstehendespielemannschaft);
 
 let ueberschrift2 = widget.addText(`Nächstes Spiel Liga:`);
 ueberschrift2.font = textschriftartfett;
@@ -328,11 +318,6 @@ function anzahlspielegesamt(html) {
 function datumsumrechnung(string) {
   let [day, month, year] = string.split(".")
   let datum = new Date(Number(year) + 2000, month - 1, day)
-//  if (debuglevel > 0) {
-//    console.log("-----------------");
-//    console.log("String: " + string);
-//    console.log("Datum: " + datum);
-//  }
   return datum;
 }
 
@@ -428,4 +413,14 @@ function sortiereDSVDaten(array) {
   }
 
   return array;
+}
+
+function logDivider() {
+  log("-----------------");
+}
+
+function log(ausgabe) {
+  if (debuglevel > 0) {
+    console.log(ausgabe);
+  }
 }
