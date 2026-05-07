@@ -14,7 +14,7 @@ async function main() {
 
 
 // Version
-const version = "5.01";
+const version = "5.02";
 // 07.05.2026
 
 
@@ -54,7 +54,7 @@ const mannschaft = "Auswahl Stuttgart";
 
 
 // Cache-Konfiguration
-const cacheMinutes = 60;
+const cacheMinutes = 180;
 
 const fm = FileManager.local();
 const cachePath = fm.joinPath(
@@ -367,7 +367,14 @@ textzeileversion.textColor=farbefooter;
 
 
 // Widget starten
-widget.refreshAfterDate = new Date(Date.now() + 60 * 60 * 1000);
+
+// Kürzeres Refresh bei Cache-Nutzung (erfolgreicher Abruf → 60 Minuten Ruhe, Fehler/Cache verwendet → neuer Versuch schon nach 10 Minuten)
+if (useCache) {
+  widget.refreshAfterDate = new Date(Date.now() + 10 * 60 * 1000);
+} else {
+  widget.refreshAfterDate = new Date(Date.now() + 60 * 60 * 1000);
+}
+
 Script.setWidget(widget);
 if (!config.runsInWidget) {
   widget.presentMedium();
