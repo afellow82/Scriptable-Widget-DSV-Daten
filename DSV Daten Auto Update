@@ -14,13 +14,12 @@ async function main() {
 
 
 // Version
-const version = "4.00";
-// 30.04.2026
+const version = "5.00";
+// 07.05.2026
 
 
 // ToDo / Bugs / Ideen:
 // - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
-// - Datenabfrage nur noch stündlich, aber trotzdem mehrere Widget-Instanzen parallel >>> Umbau laut ChatGPT theoretisch möglich über separate Caches, aber viele Codeänderungen notwendig
 // - matchAll() statt indexOf verwenden:
 //   - const rows = [...html.matchAll(/<td align="center">(\d+)<[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<a[^>]*>(.*?)<\/a>/g)];
 //   - sehr großer Geschwindikeitsgewinn
@@ -54,23 +53,85 @@ else if (param === 'BW U14') {
 const mannschaft = "Auswahl Stuttgart";
 
 
-// Holen der Daten von Webseite
-const req = new Request(url)
-  req.headers = {
-    "Referer": "https://dsvdaten.dsv.de",
-    "Origin": "https://dsvdaten.dsv.de",
+// Cache-Konfiguration
+const cacheMinutes = 60;
+
+const fm = FileManager.local();
+const cachePath = fm.joinPath(
+  fm.cacheDirectory(),
+  "dsv_cache_" + liga + ".txt"
+);
+
+// Prüfen ob Cache existiert und noch gültig ist
+let useCache = false;
+
+if (fm.fileExists(cachePath)) {
+
+  let modified = fm.modificationDate(cachePath);
+  let ageMinutes = (Date.now() - modified.getTime()) / 1000 / 60;
+
+  if (ageMinutes < cacheMinutes) {
+    useCache = true;
   }
-const wv = new WebView();
-await wv.loadRequest(req);
+}
 
-let html = await wv.evaluateJavaScript(`
-  document.querySelectorAll("svg").forEach(e=>e.remove())
-  document.querySelector("input[name='__VIEWSTATE']").value = ""
+let html;
 
-  completion(
-    document.querySelector("body").outerHTML
-  )
-`, true);
+if (useCache) {
+
+  debugLog("Nutze Cache");
+
+  html = fm.readString(cachePath);
+
+} else {
+
+  debugLog("Lade Daten von Webseite");
+
+  try {
+
+    const req = new Request(url);
+
+    req.headers = {
+      "Referer": "https://dsvdaten.dsv.de",
+      "Origin": "https://dsvdaten.dsv.de",
+    };
+
+    const wv = new WebView();
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await wv.loadRequest(req);
+
+    html = await wv.evaluateJavaScript(`
+      document.querySelectorAll("svg").forEach(e=>e.remove())
+
+      let viewstate = document.querySelector("input[name='__VIEWSTATE']");
+      if (viewstate) {
+        viewstate.value = "";
+      }
+
+      completion(document.querySelector("body").outerHTML)
+    `, true);
+
+    // HTML im Cache speichern
+    fm.writeString(cachePath, html);
+
+  } catch (e) {
+
+    debugLog("Fehler beim Laden: " + e);
+
+    // Falls Abruf fehlschlägt:
+    // alten Cache weiter verwenden
+    if (fm.fileExists(cachePath)) {
+
+      html = fm.readString(cachePath);
+
+    } else {
+
+      throw e;
+
+    }
+  }
+}
 
 // Richtige Tabelle finden (nicht einfach die erste)
 let startSearch = html.indexOf('<td align="center">1<');
@@ -166,16 +227,18 @@ for (let i=1; i<max+1; i++ ) {
 
 sortiereDSVDaten(dsvdaten);
 
-for (let i=0; i < dsvdaten.length; i++ ) {
-  debugLogDivider();
-  debugLog("Nr.: " + i);
-  debugLog(dsvdaten[i].spieltag);
-  debugLog(dsvdaten[i].datum);
-  debugLog(dsvdaten[i].uhrzeit);
-  debugLog(dsvdaten[i].heim);
-  debugLog(dsvdaten[i].gast);
-  debugLog(dsvdaten[i].ort);
-  debugLog(dsvdaten[i].ergebnis);
+if (debuglevel > 0) {
+  for (let i=0; i < dsvdaten.length; i++ ) {
+    debugLogDivider();
+    debugLog("Nr.: " + i);
+    debugLog(dsvdaten[i].spieltag);
+    debugLog(dsvdaten[i].datum);
+    debugLog(dsvdaten[i].uhrzeit);
+    debugLog(dsvdaten[i].heim);
+    debugLog(dsvdaten[i].gast);
+    debugLog(dsvdaten[i].ort);
+    debugLog(dsvdaten[i].ergebnis);
+  }
 }
 
 
@@ -292,16 +355,20 @@ if (minutenaktuell < 10) {minutenaktuelltext = '0'+ minutenaktuell;}
 
 footer.addSpacer();
 
+// Alter der Cache-Datei in Minuten bestimmen
+let ageCache = Math.floor((Date.now() - fm.modificationDate(cachePath).getTime()) / 1000 / 60);
+
 const endTime = Date.now();
 const ladezeit = ((endTime - startTime)/1000).toFixed(1).replace('.', ',');
 
-let versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +', ' + ladezeit + ' s]  ';
+let versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +', ' + ageCache + ' Min, ' + ladezeit + ' s]  ';
 let textzeileversion = footer.addText(versiontext);
 textzeileversion.font=sehrkleinschriftart;
 textzeileversion.textColor=farbefooter;
 
 
 // Widget starten
+widget.refreshAfterDate = new Date(Date.now() + 60 * 60 * 1000);
 Script.setWidget(widget);
 if (!config.runsInWidget) {
   widget.presentMedium();
