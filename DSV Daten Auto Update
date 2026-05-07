@@ -98,9 +98,6 @@ if (useCache) {
 
     const wv = new WebView();
 
-    await new Promise(resolve => {
-      Timer.schedule(2, resolve);
-    });
     await wv.loadRequest(req);
 
     html = await wv.evaluateJavaScript(`
