@@ -14,7 +14,7 @@ async function main() {
 
 
 // Version
-const version = "5.00";
+const version = "5.01";
 // 07.05.2026
 
 
@@ -98,7 +98,9 @@ if (useCache) {
 
     const wv = new WebView();
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => {
+      Timer.schedule(2, resolve);
+    });
     await wv.loadRequest(req);
 
     html = await wv.evaluateJavaScript(`
@@ -496,6 +498,7 @@ function debugLog(ausgabe) {
     console.log(ausgabe);
   }
 }
+
 
     
 
