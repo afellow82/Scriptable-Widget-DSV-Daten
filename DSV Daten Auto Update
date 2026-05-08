@@ -14,7 +14,7 @@ async function main() {
 
 
 // Version
-const version = "5.02";
+const version = "5.03";
 // 07.05.2026
 
 
@@ -79,13 +79,13 @@ let html;
 
 if (useCache) {
 
-  debugLog("Nutze Cache");
+  debugLog("Daten werden aus dem Cache genutzt");
 
   html = fm.readString(cachePath);
 
 } else {
 
-  debugLog("Lade Daten von Webseite");
+  debugLog("Daten werden von der Webseite geladen");
 
   try {
 
@@ -320,7 +320,7 @@ fortschrittliga.textColor=textfarbe;
 
 widget.addSpacer();
 
-let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft} (${ausstehendespielemannschaft} Spiele ausstehend):`);
+let ueberschrift = widget.addText(`Nächste Spiele ${mannschaft} (${ausstehendespielemannschaft} ${ausstehendespielemannschaft === 1 ? "Spiel" : "Spiele"} ausstehend):`);
 ueberschrift.font = textschriftartfett;
 ueberschrift.textColor=textfarbe;
 
@@ -502,6 +502,7 @@ function debugLog(ausgabe) {
     console.log(ausgabe);
   }
 }
+
 
 
     
