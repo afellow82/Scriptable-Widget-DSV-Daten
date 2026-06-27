@@ -14,22 +14,21 @@ async function main() {
 
 
 // Version
-const version = "5.03";
-// 07.05.2026
+const version = "5.06";
+// 27.06.2026
 
 
 // ToDo / Bugs / Ideen:
-// - Bug: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
-// - matchAll() statt indexOf verwenden:
+// - B: Mausklick soll spezielle Liga-Internetseite öffnen (bisher nur Übersicht) >>> ChatGPT sagt, es kann nicht durch Scriptable gelöst werden
+// - I: matchAll() statt indexOf verwenden:
 //   - const rows = [...html.matchAll(/<td align="center">(\d+)<[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<a[^>]*>(.*?)<\/a>/g)];
 //   - sehr großer Geschwindikeitsgewinn
-
 
 const startTime = Date.now();
 
 
 // Debuglevel
-let debuglevel = 0;
+let debuglevel = 1;
 // 0 - keine Analyse
 // 1 - Analyse Werte
 
@@ -54,7 +53,7 @@ const mannschaft = "Auswahl Stuttgart";
 
 
 // Cache-Konfiguration
-const cacheMinutes = 180;
+const cacheMinutes = 360;
 
 const fm = FileManager.local();
 const cachePath = fm.joinPath(
@@ -154,15 +153,20 @@ widget.backgroundColor = new Color("#4FC3F7");
 widget.setPadding(10, 10, 10, 10);
 widget.url = url;
 
-let max = anzahlspielegesamt(html);
+let anzSpiele = anzahlspielegesamt(html);
+let hoechsteSN = hoechsteSpielnummer(html);
+
+debugLog("anzSpiele: " + anzSpiele);
+debugLog("hoechsteSN: " + hoechsteSN);
 
 const dsvdaten = [];
 
 
 // Daten von Seite auslesen und in dsvdatenarray schreiben
-for (let i=1; i<max+1; i++ ) {
+for (let i=1; i<hoechsteSN+1; i++ ) {
   let suchstring = "<td align=\"center\">" + i + "<";
   let start = html.indexOf(suchstring);
+  if (start === -1) debugLog("Spiel " + i + " nicht in Liste enthalten"); 
   let starta = html.indexOf("<nobr>", start);
   let endedatum = html.indexOf("</nobr>", start);
   let endem1 = html.indexOf("</td>",endedatum+56);
@@ -263,7 +267,7 @@ let uebernaechstesspiel = null;
 
 let naechstesspielliga = null;
 let ausstehendespielemannschaft = 0;
-let gespieltespiele = 0;
+let gespieltespiele = anzSpiele;
 
 let count = 0;
 
@@ -274,8 +278,8 @@ for (let i = 0; i < dsvdaten.length; i++) {
   let istMannschaft = (eintrag.heim === mannschaft || eintrag.gast === mannschaft);
 
   // gespielte Spiele
-  if (!istOffen) {
-    gespieltespiele++;
+  if (istOffen) {
+    gespieltespiele--;
   }
 
   // nächstes Spiel Liga
@@ -314,7 +318,7 @@ titel.font = titelschriftart;
 titel.textColor=textfarbe;
 
 // Fortschritt Liga in Titel
-let fortschrittliga = titelspalte1stack.addText(`(${gespieltespiele} von ${max} Spielen der Saison absolviert)`);
+let fortschrittliga = titelspalte1stack.addText(`(${gespieltespiele} von ${anzSpiele} Spielen der Saison absolviert)`);
 fortschrittliga.font = textschriftart;
 fortschrittliga.textColor=textfarbe;
 
@@ -331,7 +335,8 @@ debugLogDivider();
 debugLog("Nächstes Spiel Liga: " + naechstesspielliga);
 debugLog("Nächstes Spiel Mannschaft: " + naechstesspiel);
 debugLog("Übernächstes Spiel Mannschaft: " + uebernaechstesspiel);
-debugLog("Anzahl Spiele gesamt: " + max.toString());
+debugLog("Anzahl Spiele gesamt Liga: " + anzSpiele.toString());
+debugLog("Anzahl Spiele gespielt Liga: " + gespieltespiele.toString());
 debugLog("Ausstehende Spiele Mannschaft: " + ausstehendespielemannschaft);
 
 let ueberschrift2 = widget.addText(`Nächstes Spiel Liga:`);
@@ -360,7 +365,7 @@ let ageCache = Math.floor((Date.now() - fm.modificationDate(cachePath).getTime()
 const endTime = Date.now();
 const ladezeit = ((endTime - startTime)/1000).toFixed(1).replace('.', ',');
 
-let versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +', ' + ageCache + ' Min, ' + ladezeit + ' s]  ';
+let versiontext = '[V'+ version + ', '+stundenaktuelltext+':'+minutenaktuelltext +', ' + ageCache + ' min, ' + ladezeit + ' s]  ';
 let textzeileversion = footer.addText(versiontext);
 textzeileversion.font=sehrkleinschriftart;
 textzeileversion.textColor=farbefooter;
@@ -387,6 +392,26 @@ function anzahlspielegesamt(html) {
   return (html.match(/<td align="center">\d+</g) || []).length;
 }
 
+
+// Funktion Ermittlung höchste Spielnummer
+function hoechsteSpielnummer(html) {
+
+  let hoechste = 0;
+
+  let treffer = html.match(/<td align="center">(\d+)</g);
+
+  if (treffer) {
+    for (let eintrag of treffer) {
+      let nummer = parseInt(eintrag.match(/\d+/)[0]);
+
+      if (nummer > hoechste) {
+        hoechste = nummer;
+      }
+    }
+  }
+
+  return hoechste;
+}
 
 // Funktion Umrechnung String in Datum
 function datumsumrechnung(datum) {
@@ -502,6 +527,7 @@ function debugLog(ausgabe) {
     console.log(ausgabe);
   }
 }
+
 
 
 
