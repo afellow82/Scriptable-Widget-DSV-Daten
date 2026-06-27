@@ -5,7 +5,7 @@
 
 
 // Version
-const version = "5.04";
+const version = "5.05";
 // 27.06.2026
 
 
@@ -14,7 +14,6 @@ const version = "5.04";
 // - I: matchAll() statt indexOf verwenden:
 //   - const rows = [...html.matchAll(/<td align="center">(\d+)<[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<nobr>(.*?)<\/nobr>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<\/td>[\s\S]*?<a[^>]*>(.*?)<\/a>/g)];
 //   - sehr großer Geschwindikeitsgewinn
-// - B: Anzahl gespielte Spiele falsch
 
 const startTime = Date.now();
 
@@ -30,10 +29,8 @@ let debuglevel = 1;
 // Webseite U16: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L
 // Webseite U12: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=107&Group=&LeagueKind=L
 // Webseite U14: https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L
-// DEBUG let liga = "BW U16";
-// DEBUG let url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L";
-let liga = "BW U14";
-let url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=109&Group=&LeagueKind=L";
+let liga = "BW U16";
+let url = "https://dsvdaten.dsv.de/Modules/WB/League.aspx?Season=2025&LeagueID=215&Group=&LeagueKind=L";
 let param = args.widgetParameter ?? "";
 if (param === 'BW U12') {
   liga = "BW U12";
@@ -261,7 +258,7 @@ let uebernaechstesspiel = null;
 
 let naechstesspielliga = null;
 let ausstehendespielemannschaft = 0;
-let gespieltespiele = 0;
+let gespieltespiele = anzSpiele;
 
 let count = 0;
 
@@ -272,8 +269,10 @@ for (let i = 0; i < dsvdaten.length; i++) {
   let istMannschaft = (eintrag.heim === mannschaft || eintrag.gast === mannschaft);
 
   // gespielte Spiele
-  if (!istOffen) {
-    gespieltespiele++;
+  if (istOffen) {
+    gespieltespiele--;
+    debugLog("i: " + i);
+    debugLog("gespieltespiele: " + gespieltespiele);
   }
 
   // nächstes Spiel Liga
@@ -329,7 +328,8 @@ debugLogDivider();
 debugLog("Nächstes Spiel Liga: " + naechstesspielliga);
 debugLog("Nächstes Spiel Mannschaft: " + naechstesspiel);
 debugLog("Übernächstes Spiel Mannschaft: " + uebernaechstesspiel);
-debugLog("Anzahl Spiele gesamt: " + anzSpiele.toString());
+debugLog("Anzahl Spiele gesamt Liga: " + anzSpiele.toString());
+debugLog("Anzahl Spiele gespielt Liga: " + gespieltespiele.toString());
 debugLog("Ausstehende Spiele Mannschaft: " + ausstehendespielemannschaft);
 
 let ueberschrift2 = widget.addText(`Nächstes Spiel Liga:`);
@@ -385,8 +385,7 @@ function anzahlspielegesamt(html) {
   return (html.match(/<td align="center">\d+</g) || []).length;
 }
 
-// #######################################
-// DEBUG
+
 // Funktion Ermittlung höchste Spielnummer
 function hoechsteSpielnummer(html) {
 
